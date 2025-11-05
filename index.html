@@ -3,242 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulatore Budget Stagionale | Team Ciclistico</title>
+    <title>Simulatore Budget Granfondo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root {
-            color-scheme: light;
-            --bg: #edf2f7;
-            --surface: #ffffff;
-            --surface-alt: #f7fafc;
-            --border: #d8e0eb;
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --text: #0f172a;
-            --text-muted: #475569;
-            --accent: #f97316;
-        }
-
-        * { box-sizing: border-box; }
-
         body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            color: #1e293b;
             margin: 0;
-            font-family: 'Inter', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.5;
+            padding: 20px;
         }
-
-        header.hero {
-            padding: 48px 24px 32px;
+        header {
             text-align: center;
-            background: linear-gradient(180deg, rgba(37, 99, 235, 0.12), rgba(37, 99, 235, 0));
+            margin-bottom: 40px;
         }
-
-        header.hero h1 {
-            margin: 0;
+        h1 {
+            font-size: 2rem;
             font-weight: 700;
-            font-size: clamp(2rem, 3vw, 2.8rem);
         }
-
-        header.hero p {
-            max-width: 720px;
-            margin: 16px auto 0;
-            color: var(--text-muted);
-            font-size: 1rem;
-        }
-
-        main {
-            max-width: 1240px;
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 0 24px 64px;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-
-        .layout-grid {
-            display: grid;
-            grid-template-columns: 360px 1fr;
-            align-items: start;
-            gap: 32px;
-        }
-
-        .panel,
-        .card {
-            background: var(--surface);
-            border-radius: 18px;
-            border: 1px solid var(--border);
-            padding: 24px;
-            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
-        }
-
-        .panel h2, .card h2, .card h3 {
-            margin-top: 0;
-            font-weight: 600;
-        }
-
-        .panel h2 { font-size: 1.35rem; margin-bottom: 16px; }
-
-        form .form-grid {
-            display: grid;
-            gap: 16px;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        }
-
         label {
-            display: flex;
-            flex-direction: column;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            gap: 6px;
-        }
-
-        label span {
+            display: block;
+            margin-top: 12px;
             font-weight: 600;
-            color: var(--text);
         }
-
         input[type="number"] {
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 10px 12px;
-            font-size: 0.95rem;
-            transition: border 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
         }
-
-        input[type="number"]:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-        }
-
-        .button-row {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-
         button {
+            background-color: #2563eb;
+            color: #fff;
             border: none;
-            border-radius: 999px;
-            padding: 10px 20px;
-            font-weight: 600;
-            font-size: 0.95rem;
+            padding: 10px 16px;
+            border-radius: 6px;
             cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            font-weight: 600;
+            margin-top: 16px;
         }
-
-        button.primary {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.3);
-        }
-
-        button.primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-
-        button.secondary {
-            background: var(--surface-alt);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-
-        .insight-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 16px;
-            margin-top: 24px;
-        }
-
-        .insight-card {
-            background: var(--surface-alt);
-            border-radius: 14px;
-            padding: 16px;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-        }
-
-        .insight-card h4 { margin: 0 0 6px; font-size: 0.85rem; color: var(--text-muted); }
-        .insight-card p { margin: 0; font-size: 1.1rem; font-weight: 600; }
-
+        button:hover { background-color: #1d4ed8; }
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.92rem;
+            margin-top: 30px;
         }
-
         th, td {
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border);
+            border: 1px solid #e2e8f0;
+            padding: 10px;
             text-align: left;
         }
-
-        thead th {
-            font-size: 0.82rem;
-            text-transform: uppercase;
-            color: var(--text-muted);
+        th { background-color: #f1f5f9; }
+        #chartContainer {
+            margin-top: 40px;
         }
-
-        .table-wrapper { border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-
-        .summary-grid {
-            display: grid;
-            gap: 16px;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            margin: 12px 0 28px;
-        }
-
-        .summary-box { padding: 18px; background: var(--surface-alt); border-radius: 14px; border: 1px solid rgba(148,163,184,0.35); }
-        .summary-box h4 { margin: 0 0 8px; font-size: 0.85rem; color: var(--text-muted); }
-        .summary-box p { margin: 0; font-size: 1.2rem; font-weight: 700; }
-
-        .comparison-grid {
-            display: grid;
-            gap: 16px;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            margin-bottom: 32px;
-        }
-
-        .comparison-card {
-            border-radius: 16px;
-            border: 1px solid rgba(37, 99, 235, 0.14);
-            padding: 18px;
-            background: rgba(37, 99, 235, 0.05);
-        }
-
-        .comparison-card h3 { margin: 0 0 12px; font-size: 1.05rem; }
-        .comparison-card p { margin: 4px 0; font-size: 0.95rem; }
-
-        .charts-grid {
-            display: grid;
-            gap: 20px;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            margin-top: 24px;
-        }
-
-        footer {
-            text-align: center;
-            padding: 32px 16px 48px;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-
-        @media (max-width: 1100px) { .layout-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <header class="hero">
-        <h1>Simulatore di Budget Stagionale</h1>
-        <p>Imposta i parametri di una stagione tipo, confronta i costi con e senza efficientamento Eviso e scarica il tuo piano di spesa.</p>
+    <header>
+        <h1>Simulatore Budget Stagione Granfondo</h1>
+        <p>Stima quanto può costare una stagione di gare e trasferte per il tuo team.</p>
     </header>
 
-    <main>
-        <!-- I tuoi contenuti e script JavaScript -->
-        <p style="text-align:center;color:#64748b;">(contenuto script e logica JS rimossi per brevità – vanno qui)</p>
-    </main>
+    <div class="container">
+        <form id="budgetForm">
+            <label>Numero gare annuali</label>
+            <input type="number" id="races" value="12" min="1">
 
-    <footer>Versione dimostrativa — condividi il budget con il tuo staff tecnico e commerciale.</footer>
+            <label>Quota media di iscrizione (€)</label>
+            <input type="number" id="registration" value="60" min="0">
+
+            <label>Costo medio trasferta (per gara, €)</label>
+            <input type="number" id="travel" value="250" min="0">
+
+            <label>Costo medio manutenzione bici (per gara, €)</label>
+            <input type="number" id="bike" value="100" min="0">
+
+            <label>Numero atleti</label>
+            <input type="number" id="athletes" value="8" min="1">
+
+            <button type="submit">Calcola Budget</button>
+        </form>
+
+        <table id="resultTable" style="display:none">
+            <thead>
+                <tr>
+                    <th>Voce</th>
+                    <th>Totale (€)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <div id="chartContainer" style="display:none">
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('budgetForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const races = parseInt(document.getElementById('races').value) || 0;
+            const registration = parseFloat(document.getElementById('registration').value) || 0;
+            const travel = parseFloat(document.getElementById('travel').value) || 0;
+            const bike = parseFloat(document.getElementById('bike').value) || 0;
+            const athletes = parseInt(document.getElementById('athletes').value) || 0;
+
+            const totalRegistration = registration * races * athletes;
+            const totalTravel = travel * races * athletes;
+            const totalBike = bike * races * athletes;
+            const total = totalRegistration + totalTravel + totalBike;
+
+            const tbody = document.querySelector('#resultTable tbody');
+            tbody.innerHTML = `
+                <tr><td>Iscrizioni</td><td>€ ${totalRegistration.toLocaleString()}</td></tr>
+                <tr><td>Trasferte</td><td>€ ${totalTravel.toLocaleString()}</td></tr>
+                <tr><td>Manutenzione bici</td><td>€ ${totalBike.toLocaleString()}</td></tr>
+                <tr><th>Totale Stagionale</th><th>€ ${total.toLocaleString()}</th></tr>
+            `;
+
+            document.getElementById('resultTable').style.display = 'table';
+            document.getElementById('chartContainer').style.display = 'block';
+
+            const ctx = document.getElementById('chart');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Iscrizioni', 'Trasferte', 'Manutenzione'],
+                    datasets: [{
+                        data: [totalRegistration, totalTravel, totalBike],
+                        backgroundColor: ['#3b82f6','#10b981','#f97316']
+                    }]
+                },
+                options: {
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
