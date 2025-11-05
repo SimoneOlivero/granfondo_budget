@@ -152,6 +152,11 @@
             font-size: 1.1rem;
             font-weight: 600;
         }
+        /* Stile specifico per l'annualizzazione */
+        .insight-card.annualized {
+             border-color: var(--primary);
+             background-color: rgba(37, 99, 235, 0.05);
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -230,7 +235,7 @@
 <body>
     <header class="hero">
         <h1>Simulatore di Budget Stagionale</h1>
-        <p>Imposta tutti i costi fissi e i parametri di attività per calcolare il budget complessivo della stagione.</p>
+        <p>Imposta tutti i costi fissi (inclusa l'annualizzazione automatica del Leasing) e i parametri di attività per calcolare il budget complessivo.</p>
     </header>
     <main>
         <div class="layout-grid">
@@ -238,10 +243,12 @@
                 <h2 id="title-scenario">Parametri di Costo e Attività</h2>
                 <form id="scenario-form">
                     <div class="form-grid">
-                        <label><span>Costo Veicoli (Leasing + Ass. **Mensile**) (€)</span><input type="number" id="input-vehicle-cost" min="0" step="100"></label>
+                        <!-- COSTI FISSI ANNUALI -->
+                        <label><span>Costo Veicoli (Leasing + Ass. Mensile) (€)</span><input type="number" id="input-vehicle-cost" min="0" step="100"></label>
                         <label><span>Costo Abbigliamento/Divise (€)</span><input type="number" id="input-clothing-cost" min="0" step="100"></label>
                         <label><span>Altri Costi Fissi Annuali (€)</span><input type="number" id="input-admin-cost" min="0" step="100"></label>
                         
+                        <!-- PARAMETRI DI ATTIVITÀ -->
                         <label><span>Numero gare</span><input type="number" id="input-races" min="0" step="1"></label>
                         <label><span>Quota iscrizione media (€)</span><input type="number" id="input-registration" min="0" step="10"></label>
                         <label><span>Km medi per trasferta gara</span><input type="number" id="input-km" min="0" step="10"></label>
@@ -251,6 +258,7 @@
                         <label><span>Consumo mezzo (L/100km)</span><input type="number" id="input-consumption" min="0" step="0.1"></label>
                         <label><span>Pedaggio medio (€/km)</span><input type="number" id="input-toll" min="0" step="0.01"></label>
                         
+                        <!-- COSTI VARIABILI UNITARI MANUALI (Basi di calcolo) -->
                         <label><span>Manutenzione Bici per gara (€)</span><input type="number" id="input-bike-maint" min="0" step="1"></label>
 
                     </div>
@@ -260,6 +268,7 @@
                     </div>
                 </form>
                 <div class="insight-grid" aria-label="Riepilogo automatico dei parametri">
+                    <div class="insight-card annualized"><h4>Costo Veicoli Annuale Stimato</h4><p id="insight-annual-vehicle">–</p></div>
                     <div class="insight-card"><h4>Carburante al km</h4><p id="insight-fuel-km">–</p></div>
                     <div class="insight-card"><h4>Km totali in stagione</h4><p id="insight-total-km">–</p></div>
                     <div class="insight-card"><h4>Giornate di trasferta</h4><p id="insight-travel-days">–</p></div>
@@ -267,7 +276,7 @@
                 
                 <section style="margin-top: 16px;">
                     <h3>Nota sui costi variabili</h3>
-                    <p style="font-size: 0.9em; color: var(--text-muted);">Il pulsante **"Allinea costi dinamici"** aggiorna automaticamente le voci variabili (Iscrizioni, Vitto/Alloggio, Carburante, Pedaggi) in base ai parametri impostati (es. Quota iscrizione media, Km medi, Prezzo carburante).</p>
+                    <p style="font-size: 0.9em; color: var(--text-muted);">Il pulsante **"Allinea costi dinamici"** aggiorna le voci variabili (Iscrizioni, Vitto/Alloggio, Carburante, Pedaggi) in base ai parametri di attività (es. Quota iscrizione media, Km medi).</p>
                 </section>
 
             </aside>
@@ -296,7 +305,7 @@
         </div>
         <section class="card" style="margin-top: 32px;" aria-labelledby="title-docs">
             <h2 id="title-docs">Come personalizzare il modello</h2>
-            <p>Tutti i parametri e costi di base sono modificabili direttamente nel pannello di sinistra. Il **Costo Veicoli** viene inserito come spesa mensile e annualizzato automaticamente.</p>
+            <p>Tutti i parametri e costi di base sono modificabili direttamente nel pannello di sinistra. Il **Costo Veicoli** viene inserito come spesa mensile e annualizzato automaticamente (mostrato nel riepilogo in alto).</p>
         </section>
     </main>
     <footer>Versione dimostrativa — tutti i diritti riservati.</footer>
@@ -306,9 +315,36 @@
     const MONTHS_IN_YEAR = 12; // Costante per l'annualizzazione
 
     async function loadCostModel() {
-        const response = await fetch('data/default_costs.json');
-        if (!response.ok) throw new Error('Impossibile caricare data/default_costs.json');
-        const json = await response.json();
+        // Simuliamo il caricamento del JSON che non richiede Firebase per i costi base
+        const defaultCostsJson = {
+          "defaults": {
+            "races": 30,
+            "avgKmPerRace": 500,
+            "registrationFee": 50,
+            "travelDaysPerRace": 1.5,
+            "dailyTravelCost": 250,
+            "fuelPrice": 1.70,
+            "fuelConsumptionPer100Km": 11.5,
+            "tollPerKm": 0.08,
+            
+            "vehicleCostMonthly": 750, 
+            "clothingCost": 5000,   
+            "adminCost": 2700,      
+            "bikeMaintPerRace": 20  
+          },
+          "fixed_costs": [
+            
+          ],
+          "variable_costs": [
+            { "id": "race_fees", "name": "Quote Iscrizione Gara (Costo unitario)", "amount": 50, "metric": "per_race", "category": "iscrizioni" },
+            { "id": "travel_days", "name": "Vitto/Alloggio Trasferta (Costo medio/gg)", "amount": 375, "metric": "per_race", "category": "trasferte" },
+            { "id": "fuel", "name": "Carburante", "amount": 0.1955, "metric": "per_km", "category": "trasferte" },
+            { "id": "toll", "name": "Pedaggi Autostradali", "amount": 0.08, "metric": "per_km", "category": "trasferte" },
+            { "id": "bike_maint", "name": "Manutenzione Bici/Ricambi", "amount": 20, "metric": "per_race", "category": "manutenzione" }
+          ]
+        };
+        
+        const json = defaultCostsJson; // Uso il JSON hardcoded qui per semplicità e auto-contenimento
         
         state.fixedCosts = [];
         state.variableCosts = json.variable_costs.map(item => ({ ...item }));
@@ -377,11 +413,12 @@
     }
 
     function attachListeners() {
-        document.getElementById('btn-update').addEventListener('click', e => { e.preventDefault(); recalc(); });
+        // L'evento 'submit' sul form scatena il ricalcolo e aggiorna lo state
+        document.getElementById('scenario-form').addEventListener('submit', e => { e.preventDefault(); recalc(); });
         
-        // Ascolta tutti gli input principali
+        // Ascolta tutti gli input principali per aggiornamenti dinamici
         ['input-vehicle-cost', 'input-clothing-cost', 'input-admin-cost', 'input-races','input-km','input-registration','input-travel-days','input-travel-daily','input-fuel-price','input-consumption','input-toll', 'input-bike-maint'].forEach(id => {
-            document.getElementById(id).addEventListener('change', recalc);
+            document.getElementById(id).addEventListener('input', recalc); // Usiamo 'input' per aggiornamento più rapido
         });
 
         document.getElementById('btn-sync-dynamic').addEventListener('click', e => {
@@ -393,24 +430,25 @@
     }
     
     function getScenarioParams() {
-        // Input Fissi Principali
+        // INPUT Mensile
         const monthlyVehicleCost = Number(document.getElementById('input-vehicle-cost').value) || 0;
+        
+        // CALCOLO Annuale
+        const annualVehicleCost = monthlyVehicleCost * MONTHS_IN_YEAR;
+        
+        // Altri Input Fissi
         const clothingCost       = Number(document.getElementById('input-clothing-cost').value) || 0;
         const adminCost          = Number(document.getElementById('input-admin-cost').value) || 0;
         
-        // Calcola l'annualizzazione qui:
-        const annualVehicleCost = monthlyVehicleCost * MONTHS_IN_YEAR;
-
-        // Aggiorna i costi fissi virtuali nello state
+        // Aggiorna i costi fissi virtuali nello state con i valori ANNUALI
         updateFixedCostItem('vehicle_cost', annualVehicleCost);
         updateFixedCostItem('clothing_cost', clothingCost);
         updateFixedCostItem('admin_cost', adminCost);
         
-        // Input Variabili
+        // Input Variabili e Parametri di Attività
         const bikeMaint     = Number(document.getElementById('input-bike-maint').value) || 0;
         updateVariableCostItem('bike_maint', bikeMaint);
 
-        // Parametri Variabili
         const races         = Number(document.getElementById('input-races'         ).value) || 0;
         const avgKmPerRace  = Number(document.getElementById('input-km'            ).value) || 0;
         const registrationFee= Number(document.getElementById('input-registration').value) || 0;
@@ -428,7 +466,7 @@
             races, avgKmPerRace, registrationFee, travelDaysPerRace: travelDaysPR, dailyTravelCost, 
             fuelPrice, fuelConsumptionPer100Km: fuelCons100, tollPerKm, 
             fuelCostPerKm, totalKm, totalTravelDays: totalTravel,
-            vehicleCost: annualVehicleCost, clothingCost, adminCost // Ritorna il costo annuale
+            vehicleCost: annualVehicleCost, clothingCost, adminCost 
         };
     }
 
@@ -443,12 +481,16 @@
     }
 
     function updateDynamicInsights(params) {
+        // NUOVO: Mostra l'annualizzazione del costo veicoli
+        document.getElementById('insight-annual-vehicle').textContent = formatCurrency(params.vehicleCost); 
+
         document.getElementById('insight-fuel-km').textContent  = `${formatCurrency(params.fuelCostPerKm)} / km`;
         document.getElementById('insight-total-km').textContent = `${formatNumber(params.totalKm)} km`;
         document.getElementById('insight-travel-days').textContent = `${formatNumber(params.totalTravelDays)} gg`;
     }
     
     function applyScenarioAdjustments(params) {
+        // Allinea i costi variabili dinamici
         updateVariableCostItem('race_fees',  params.registrationFee); 
         updateVariableCostItem('travel_days', params.travelDaysPerRace * params.dailyTravelCost); 
         updateVariableCostItem('fuel',         params.fuelCostPerKm); 
