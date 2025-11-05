@@ -61,6 +61,8 @@
             border: 1px solid var(--border);
             padding: 24px;
             box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+            /* Aggiustamento per prevenire il taglio in overflow se le tabelle sono troppo larghe */
+            overflow: hidden; 
         }
         .panel h2, .card h2, .card h3 {
             margin-top: 0;
@@ -154,11 +156,13 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 0.92rem;
+            table-layout: fixed; /* Aiuta a prevenire il taglio se il contenuto è troppo lungo */
         }
         th, td {
             padding: 10px 12px;
             border-bottom: 1px solid var(--border);
             text-align: left;
+            word-wrap: break-word; /* Forza il testo a capo se troppo lungo */
         }
         thead th {
             font-size: 0.82rem;
@@ -169,8 +173,19 @@
         .table-wrapper {
             border: 1px solid var(--border);
             border-radius: 16px;
-            overflow: hidden;
+            overflow-x: auto; /* Permette lo scrolling orizzontale se necessario */
             margin-bottom: 16px;
+        }
+        .table-wrapper table {
+             table-layout: auto; /* Rimuoviamo il layout fisso per i riquadri piccoli */
+             min-width: 100%;
+        }
+        /* Stile specifico per le input nelle tabelle dei costi */
+        .cost-input {
+            width: 100%;
+            padding: 6px 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
         }
         .summary-grid {
             display: grid;
@@ -207,6 +222,11 @@
             box-shadow: none;
             border-radius: 14px;
             padding: 18px;
+            /* Forza il grafico ad avere un buon aspect ratio */
+            position: relative; 
+        }
+        .charts-grid canvas {
+            max-height: 300px; /* Limita l'altezza del grafico per non farlo crescere troppo */
         }
         footer {
             text-align: center;
@@ -222,18 +242,18 @@
 <body>
     <header class="hero">
         <h1>Simulatore di Budget Stagionale</h1>
-        <p>Imposta i parametri di una stagione tipo e calcola i costi complessivi di una squadra ciclistica. I grafici mostrano come sono ripartite le spese.</p>
+        <p>Imposta tutti i costi fissi e i parametri di attività per calcolare il budget complessivo della stagione.</p>
     </header>
     <main>
         <div class="layout-grid">
             <aside class="panel" aria-labelledby="title-scenario">
-                <h2 id="title-scenario">Parametri di stagione</h2>
+                <h2 id="title-scenario">Parametri di Costo e Attività</h2>
                 <form id="scenario-form">
                     <div class="form-grid">
                         <label><span>Costo Veicoli (Leasing + Ass.) (€)</span><input type="number" id="input-vehicle-cost" min="0" step="500"></label>
                         <label><span>Costo Abbigliamento/Divise (€)</span><input type="number" id="input-clothing-cost" min="0" step="100"></label>
-                        <label><span>Costo Personale (DS/Meccanico) (€)</span><input type="number" id="input-staff-cost" min="0" step="1000"></label>
-
+                        <label><span>Costi Amministrativi/Sede/RC (€)</span><input type="number" id="input-admin-cost" min="0" step="100"></label>
+                        
                         <label><span>Numero gare</span><input type="number" id="input-races" min="0" step="1"></label>
                         <label><span>Quota iscrizione media (€)</span><input type="number" id="input-registration" min="0" step="10"></label>
                         <label><span>Km medi per trasferta gara</span><input type="number" id="input-km" min="0" step="10"></label>
@@ -254,7 +274,7 @@
                     <div class="insight-card"><h4>Giornate di trasferta</h4><p id="insight-travel-days">–</p></div>
                 </div>
                 <section style="margin-top: 32px;">
-                    <h3>Costi fissi (Altri)</h3>
+                    <h3>Costi Fissi (Voci Extra Modificabili)</h3>
                     <div class="table-wrapper">
                         <table aria-describedby="title-scenario">
                             <thead><tr><th>Voce</th><th>Categoria</th><th>Importo (€)</th></tr></thead>
@@ -263,7 +283,7 @@
                     </div>
                 </section>
                 <section style="margin-top: 28px;">
-                    <h3>Costi variabili</h3>
+                    <h3>Costi Variabili (Base di calcolo modificabile)</h3>
                     <div class="table-wrapper">
                         <table aria-describedby="title-scenario">
                             <thead><tr><th>Voce</th><th>Basi di calcolo</th><th>Importo (€)</th></tr></thead>
@@ -297,12 +317,8 @@
         </div>
         <section class="card" style="margin-top: 32px;" aria-labelledby="title-docs">
             <h2 id="title-docs">Come personalizzare il modello</h2>
-            <p>Il modello dei costi si trova nel file <code>data/default_costs.json</code>. Contiene <code>fixed_costs</code>, <code>variable_costs</code> e <code>defaults</code>. La maggior parte dei costi principali sono stati spostati direttamente negli input per una modifica rapida.</p>
-            <ol>
-                <li><strong>Voci di costo:</strong> Modifica la tabella dei costi fissi e variabili tramite il JSON <code>data/default_costs.json</code> se devi aggiungere voci extra.</li>
-                <li><strong>Parametri di input:</strong> Tutti i costi principali e i parametri di stagione sono modificabili sopra.</li>
-                <li><strong>Allinea costi dinamici:</strong> il pulsante ricalcola automaticamente le voci variabili (iscrizioni, vitto/alloggio, carburante, pedaggi) basandosi sui parametri di stagione.</li>
-            </ol>
+            <p>Il modello dei costi si trova nel file <code>data/default_costs.json</code>. Contiene <code>fixed_costs</code>, <code>variable_costs</code> e <code>defaults</code>. Tutti i costi principali e i parametri di attività sono modificabili direttamente negli input in alto.</p>
+            <p>Usa la tabella **Costi Fissi (Voci Extra Modificabili)** se devi modificare rapidamente voci minori che non sono negli input principali, o il pulsante **Allinea costi dinamici** per aggiornare i parametri variabili come carburante e vitto/alloggio.</p>
         </section>
     </main>
     <footer>Versione dimostrativa — tutti i diritti riservati.</footer>
@@ -314,18 +330,18 @@
         const response = await fetch('data/default_costs.json');
         if (!response.ok) throw new Error('Impossibile caricare data/default_costs.json');
         const json = await response.json();
-        // Filtraggio: Usiamo solo i costi fissi rimasti nel JSON (es. Assicurazione RC, Sede, ecc.)
+        
+        // Carichiamo solo i costi fissi che *non* sono stati spostati negli input principali
         state.fixedCosts = json.fixed_costs.filter(item => 
-            item.id !== 'van_lease' && 
-            item.id !== 'van_insurance' && 
-            item.id !== 'mech_salary' &&
-            item.id !== 'clothing_kit'
+            item.id !== 'vehicle_cost' && 
+            item.id !== 'clothing_cost' && 
+            item.id !== 'admin_cost'
         ).map(item => ({ ...item }));
         
         state.variableCosts = json.variable_costs.map(item => ({ ...item }));
         state.defaults = { ...json.defaults };
 
-        // Aggiungiamo le voci rimosse come "costi fissi virtuali" per i calcoli e i grafici
+        // Aggiungiamo le voci principali degli input come "costi fissi virtuali" per i calcoli e i grafici
         state.fixedCosts.push({ 
             id: 'vehicle_cost', 
             name: 'Costo Veicoli (Leasing + Ass.)', 
@@ -334,19 +350,20 @@
             category: 'logistica' 
         });
         state.fixedCosts.push({ 
-            id: 'staff_cost', 
-            name: 'Costo Personale (DS/Meccanico)', 
-            amount: state.defaults.staffCost ?? 0, 
-            metric: 'season', 
-            category: 'staff' 
-        });
-        state.fixedCosts.push({ 
             id: 'clothing_cost', 
             name: 'Costo Abbigliamento/Divise', 
             amount: state.defaults.clothingCost ?? 0, 
             metric: 'season', 
             category: 'manutenzione' 
         });
+        state.fixedCosts.push({ 
+            id: 'admin_cost', 
+            name: 'Costi Amministrativi/Sede/RC', 
+            amount: state.defaults.adminCost ?? 0, 
+            metric: 'season', 
+            category: 'staff' // Usiamo staff per i costi amministrativi/RC
+        });
+        // NOTA: 'staff_cost' è stato completamente rimosso.
     }
 
     function populateCostTables() {
@@ -358,8 +375,8 @@
         // La tabella dei costi fissi mostra SOLO le voci che NON sono state spostate negli input.
         state.fixedCosts.filter(item => 
             item.id !== 'vehicle_cost' && 
-            item.id !== 'staff_cost' &&
-            item.id !== 'clothing_cost'
+            item.id !== 'clothing_cost' &&
+            item.id !== 'admin_cost' 
         ).forEach(item => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -389,7 +406,7 @@
         // Nuovi Input Fissi
         document.getElementById('input-vehicle-cost').value  = d.vehicleCost ?? 0;
         document.getElementById('input-clothing-cost').value = d.clothingCost ?? 0;
-        document.getElementById('input-staff-cost').value    = d.staffCost ?? 0;
+        document.getElementById('input-admin-cost').value    = d.adminCost ?? 0;
         
         // Vecchi Input Variabili
         document.getElementById('input-races').value         = d.races ?? 0;
@@ -403,6 +420,7 @@
     }
 
     function attachListeners() {
+        // Listener per gli input nelle tabelle (voci extra)
         document.querySelectorAll('.cost-input').forEach(input => {
             input.addEventListener('input', () => {
                 const type = input.dataset.type;
@@ -416,7 +434,8 @@
         
         document.getElementById('btn-update').addEventListener('click', e => { e.preventDefault(); recalc(); });
         
-        ['input-vehicle-cost', 'input-clothing-cost', 'input-staff-cost', 'input-races','input-km','input-registration','input-travel-days','input-travel-daily','input-fuel-price','input-consumption','input-toll'].forEach(id => {
+        // Listener per gli input nel form principale
+        ['input-vehicle-cost', 'input-clothing-cost', 'input-admin-cost', 'input-races','input-km','input-registration','input-travel-days','input-travel-daily','input-fuel-price','input-consumption','input-toll'].forEach(id => {
             document.getElementById(id).addEventListener('change', recalc);
         });
 
@@ -429,15 +448,15 @@
     }
     
     function getScenarioParams() {
-        // Nuovi Input Fissi
+        // Input Fissi Principali
         const vehicleCost   = Number(document.getElementById('input-vehicle-cost').value) || 0;
         const clothingCost  = Number(document.getElementById('input-clothing-cost').value) || 0;
-        const staffCost     = Number(document.getElementById('input-staff-cost').value) || 0;
+        const adminCost     = Number(document.getElementById('input-admin-cost').value) || 0;
         
         // Aggiorna i costi virtuali nello state
         updateFixedCostItem('vehicle_cost', vehicleCost);
         updateFixedCostItem('clothing_cost', clothingCost);
-        updateFixedCostItem('staff_cost', staffCost);
+        updateFixedCostItem('admin_cost', adminCost);
         
         // Parametri Variabili
         const races         = Number(document.getElementById('input-races'         ).value) || 0;
@@ -448,7 +467,6 @@
         const fuelPrice      = Number(document.getElementById('input-fuel-price' ).value) || 0;
         const fuelCons100    = Number(document.getElementById('input-consumption').value) || 0;
         const tollPerKm      = Number(document.getElementById('input-toll'        ).value) || 0;
-        const sponsor = 0; // Entrate forzate a zero
 
         const fuelCostPerKm  = (fuelCons100 / 100) * fuelPrice;
         const totalKm        = races * avgKmPerRace * 2; // Andata e Ritorno
@@ -456,9 +474,9 @@
         
         return { 
             races, avgKmPerRace, registrationFee, travelDaysPerRace: travelDaysPR, dailyTravelCost, 
-            fuelPrice, fuelConsumptionPer100Km: fuelCons100, tollPerKm, sponsorContribution: sponsor, 
+            fuelPrice, fuelConsumptionPer100Km: fuelCons100, tollPerKm, 
             fuelCostPerKm, totalKm, totalTravelDays: totalTravel,
-            vehicleCost, clothingCost, staffCost // Nuovi costi fissi
+            vehicleCost, clothingCost, adminCost
         };
     }
 
@@ -467,6 +485,7 @@
         if (item) item.amount = value;
     }
 
+    // ... (funzioni updateDynamicInsights, updateCostItem, applyScenarioAdjustments, calculateScenario, updateSummary, renderDetailTable, updateCharts, formatCurrency, formatPercentage, formatNumber, formatCategory e recalc invariate)
     function updateDynamicInsights(params) {
         document.getElementById('insight-fuel-km').textContent  = `${formatCurrency(params.fuelCostPerKm)} / km`;
         document.getElementById('insight-total-km').textContent = `${formatNumber(params.totalKm)} km`;
@@ -484,13 +503,9 @@
     }
 
     function applyScenarioAdjustments(params) {
-        // Questi sono i costi variabili che vengono sovrascritti dai parametri di scenario
         updateCostItem('variable', 'race_fees',  params.registrationFee, 2); 
-        // Vitto/Alloggio: Giorni trasferta * Costo giornaliero
         updateCostItem('variable', 'travel_days', params.travelDaysPerRace * params.dailyTravelCost, 2); 
-        // Carburante per km
         updateCostItem('variable', 'fuel',         params.fuelCostPerKm, 3); 
-        // Pedaggio per km
         updateCostItem('variable', 'toll',         params.tollPerKm,     3); 
     }
 
@@ -501,7 +516,6 @@
         datasets.forEach(item => {
             let seasonCost = 0, perRaceCost = 0;
             if (item.metric === 'season') {
-                // I costi fissi (anche quelli virtuali degli input) sono presi direttamente da item.amount
                 seasonCost = item.amount;
                 perRaceCost = params.races > 0 ? seasonCost / params.races : seasonCost;
             } else if (item.metric === 'per_race') {
@@ -509,7 +523,6 @@
                 seasonCost  = perRaceCost * params.races;
             } else if (item.metric === 'per_km') {
                 const costPerKm = item.amount;
-                // Calcoliamo il costo per km per una gara (andata e ritorno)
                 perRaceCost = costPerKm * params.avgKmPerRace * 2; 
                 seasonCost  = costPerKm * params.totalKm;
             }
@@ -531,7 +544,6 @@
         const avgPerRace = result.params.races > 0 ? result.totalExpenses / result.params.races : result.totalExpenses;
         document.getElementById('race-cost').textContent = formatCurrency(avgPerRace);
         
-        // Mostriamo Costi Totali (uguale a Budget Stagionale)
         document.getElementById('net-balance').textContent = formatCurrency(result.totalExpenses); 
         document.getElementById('net-balance').style.color = 'var(--text)'; 
 
@@ -543,7 +555,6 @@
         const detailBody = document.getElementById('detail-body');
         detailBody.innerHTML = '';
         
-        // Mostriamo TUTTE le voci, anche quelle mosse negli input (identificabili con un nome)
         result.items.forEach(item => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -558,7 +569,6 @@
     }
 
     function updateCharts(result) {
-        // ... (Logica Chart invariata, usa result.categories)
         const categories = Object.keys(result.categories);
         const labels     = categories.map(formatCategory);
         const values     = categories.map(cat => result.categories[cat]);
@@ -640,7 +650,7 @@
             trasferte: 'Trasferte',
             logistica: 'Logistica',
             manutenzione: 'Manutenzione',
-            staff: 'Staff tecnico'
+            staff: 'Amministrativi/Staff' // Aggiornato per riflettere i costi rimanenti
         };
         return map[code] || code;
     }
