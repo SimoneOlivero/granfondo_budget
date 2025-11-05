@@ -230,6 +230,10 @@
                 <h2 id="title-scenario">Parametri di stagione</h2>
                 <form id="scenario-form">
                     <div class="form-grid">
+                        <label><span>Costo Veicoli (Leasing + Ass.) (€)</span><input type="number" id="input-vehicle-cost" min="0" step="500"></label>
+                        <label><span>Costo Abbigliamento/Divise (€)</span><input type="number" id="input-clothing-cost" min="0" step="100"></label>
+                        <label><span>Costo Personale (DS/Meccanico) (€)</span><input type="number" id="input-staff-cost" min="0" step="1000"></label>
+
                         <label><span>Numero gare</span><input type="number" id="input-races" min="0" step="1"></label>
                         <label><span>Quota iscrizione media (€)</span><input type="number" id="input-registration" min="0" step="10"></label>
                         <label><span>Km medi per trasferta gara</span><input type="number" id="input-km" min="0" step="10"></label>
@@ -238,7 +242,7 @@
                         <label><span>Prezzo carburante (€/L)</span><input type="number" id="input-fuel-price" min="0" step="0.05"></label>
                         <label><span>Consumo mezzo (L/100km)</span><input type="number" id="input-consumption" min="0" step="0.1"></label>
                         <label><span>Pedaggio medio (€/km)</span><input type="number" id="input-toll" min="0" step="0.01"></label>
-                        </div>
+                    </div>
                     <div class="button-row">
                         <button class="primary" type="submit" id="btn-update">Aggiorna scenario</button>
                         <button class="secondary" type="button" id="btn-sync-dynamic">Allinea costi dinamici</button>
@@ -250,7 +254,7 @@
                     <div class="insight-card"><h4>Giornate di trasferta</h4><p id="insight-travel-days">–</p></div>
                 </div>
                 <section style="margin-top: 32px;">
-                    <h3>Costi fissi</h3>
+                    <h3>Costi fissi (Altri)</h3>
                     <div class="table-wrapper">
                         <table aria-describedby="title-scenario">
                             <thead><tr><th>Voce</th><th>Categoria</th><th>Importo (€)</th></tr></thead>
@@ -273,7 +277,8 @@
                 <div class="summary-grid">
                     <div class="summary-box"><h4>Budget stagionale</h4><p id="season-total">–</p></div>
                     <div class="summary-box"><h4>Spesa media per gara</h4><p id="race-cost">–</p></div>
-                    <div class="summary-box"><h4>Costi Totali</h4><p id="net-balance">–</p></div> <div class="summary-box"><h4>Km totali stagione</h4><p id="total-km">–</p></div>
+                    <div class="summary-box"><h4>Costi Totali</h4><p id="net-balance">–</p></div>
+                    <div class="summary-box"><h4>Km totali stagione</h4><p id="total-km">–</p></div>
                     <div class="summary-box"><h4>Giornate in trasferta</h4><p id="total-travel-days">–</p></div>
                 </div>
                 <h3>Dettaglio costi stagionali</h3>
@@ -292,13 +297,12 @@
         </div>
         <section class="card" style="margin-top: 32px;" aria-labelledby="title-docs">
             <h2 id="title-docs">Come personalizzare il modello</h2>
-            <p>Il modello dei costi si trova nel file <code>data/default_costs.json</code>. Contiene <code>fixed_costs</code>, <code>variable_costs</code> e <code>defaults</code>.</p>
+            <p>Il modello dei costi si trova nel file <code>data/default_costs.json</code>. Contiene <code>fixed_costs</code>, <code>variable_costs</code> e <code>defaults</code>. La maggior parte dei costi principali sono stati spostati direttamente negli input per una modifica rapida.</p>
             <ol>
-                <li><strong>Voci di costo:</strong> ogni oggetto di <code>fixed_costs</code> o <code>variable_costs</code> deve avere <code>id</code>, <code>name</code>, <code>amount</code>, <code>metric</code> (<em>season</em>, <em>per_race</em> o <em>per_km</em>) e <code>category</code>.</li>
-                <li><strong>Parametri di input:</strong> la sezione <code>defaults</code> definisce i valori predefiniti di numero gare, km medi, quota iscrizione, ecc.</li>
-                <li><strong>Allinea costi dinamici:</strong> il pulsante “Allinea costi dinamici” ricalcola automaticamente le voci variabili relative a iscrizioni, vitto/alloggio, carburante e pedaggi, basandosi sui parametri di stagione.</li>
+                <li><strong>Voci di costo:</strong> Modifica la tabella dei costi fissi e variabili tramite il JSON <code>data/default_costs.json</code> se devi aggiungere voci extra.</li>
+                <li><strong>Parametri di input:</strong> Tutti i costi principali e i parametri di stagione sono modificabili sopra.</li>
+                <li><strong>Allinea costi dinamici:</strong> il pulsante ricalcola automaticamente le voci variabili (iscrizioni, vitto/alloggio, carburante, pedaggi) basandosi sui parametri di stagione.</li>
             </ol>
-            <p>Modifica il JSON per aggiungere o cambiare voci, poi ricarica la pagina per vedere i risultati.</p>
         </section>
     </main>
     <footer>Versione dimostrativa — tutti i diritti riservati.</footer>
@@ -310,16 +314,53 @@
         const response = await fetch('data/default_costs.json');
         if (!response.ok) throw new Error('Impossibile caricare data/default_costs.json');
         const json = await response.json();
-        state.fixedCosts = json.fixed_costs.map(item => ({ ...item }));
+        // Filtraggio: Usiamo solo i costi fissi rimasti nel JSON (es. Assicurazione RC, Sede, ecc.)
+        state.fixedCosts = json.fixed_costs.filter(item => 
+            item.id !== 'van_lease' && 
+            item.id !== 'van_insurance' && 
+            item.id !== 'mech_salary' &&
+            item.id !== 'clothing_kit'
+        ).map(item => ({ ...item }));
+        
         state.variableCosts = json.variable_costs.map(item => ({ ...item }));
         state.defaults = { ...json.defaults };
+
+        // Aggiungiamo le voci rimosse come "costi fissi virtuali" per i calcoli e i grafici
+        state.fixedCosts.push({ 
+            id: 'vehicle_cost', 
+            name: 'Costo Veicoli (Leasing + Ass.)', 
+            amount: state.defaults.vehicleCost ?? 0, 
+            metric: 'season', 
+            category: 'logistica' 
+        });
+        state.fixedCosts.push({ 
+            id: 'staff_cost', 
+            name: 'Costo Personale (DS/Meccanico)', 
+            amount: state.defaults.staffCost ?? 0, 
+            metric: 'season', 
+            category: 'staff' 
+        });
+        state.fixedCosts.push({ 
+            id: 'clothing_cost', 
+            name: 'Costo Abbigliamento/Divise', 
+            amount: state.defaults.clothingCost ?? 0, 
+            metric: 'season', 
+            category: 'manutenzione' 
+        });
     }
+
     function populateCostTables() {
         const fixedBody = document.getElementById('fixed-body');
         const variableBody = document.getElementById('variable-body');
         fixedBody.innerHTML = '';
         variableBody.innerHTML = '';
-        state.fixedCosts.forEach(item => {
+        
+        // La tabella dei costi fissi mostra SOLO le voci che NON sono state spostate negli input.
+        state.fixedCosts.filter(item => 
+            item.id !== 'vehicle_cost' && 
+            item.id !== 'staff_cost' &&
+            item.id !== 'clothing_cost'
+        ).forEach(item => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${item.name}</td>
@@ -328,6 +369,7 @@
             `;
             fixedBody.appendChild(tr);
         });
+        
         state.variableCosts.forEach(item => {
             const basisLabel = item.metric === 'per_race' ? 'per gara' : item.metric === 'per_km' ? 'per km' : 'stagionale';
             const step = item.metric === 'per_km' ? 0.01 : 10;
@@ -340,18 +382,26 @@
             variableBody.appendChild(tr);
         });
     }
+
     function setDefaultInputs() {
         const d = state.defaults;
-        document.getElementById('input-races').value      = d.races ?? 0;
-        document.getElementById('input-km').value         = d.avgKmPerRace ?? 0;
-        document.getElementById('input-registration').value = d.registrationFee ?? 0;
-        document.getElementById('input-travel-days').value  = d.travelDaysPerRace ?? 0;
-        document.getElementById('input-travel-daily').value = d.dailyTravelCost ?? 0;
-        document.getElementById('input-fuel-price').value   = d.fuelPrice ?? 0;
-        document.getElementById('input-consumption').value  = d.fuelConsumptionPer100Km ?? 0;
-        document.getElementById('input-toll').value        = d.tollPerKm ?? 0;
-        // Rimosso: document.getElementById('input-sponsor').value      = d.sponsorContribution ?? 0;
+        
+        // Nuovi Input Fissi
+        document.getElementById('input-vehicle-cost').value  = d.vehicleCost ?? 0;
+        document.getElementById('input-clothing-cost').value = d.clothingCost ?? 0;
+        document.getElementById('input-staff-cost').value    = d.staffCost ?? 0;
+        
+        // Vecchi Input Variabili
+        document.getElementById('input-races').value         = d.races ?? 0;
+        document.getElementById('input-km').value            = d.avgKmPerRace ?? 0;
+        document.getElementById('input-registration').value  = d.registrationFee ?? 0;
+        document.getElementById('input-travel-days').value   = d.travelDaysPerRace ?? 0;
+        document.getElementById('input-travel-daily').value  = d.dailyTravelCost ?? 0;
+        document.getElementById('input-fuel-price').value    = d.fuelPrice ?? 0;
+        document.getElementById('input-consumption').value   = d.fuelConsumptionPer100Km ?? 0;
+        document.getElementById('input-toll').value          = d.tollPerKm ?? 0;
     }
+
     function attachListeners() {
         document.querySelectorAll('.cost-input').forEach(input => {
             input.addEventListener('input', () => {
@@ -363,10 +413,13 @@
                 if (item) { item.amount = value; recalc(); }
             });
         });
+        
         document.getElementById('btn-update').addEventListener('click', e => { e.preventDefault(); recalc(); });
-        ['input-races','input-km','input-registration','input-travel-days','input-travel-daily','input-fuel-price','input-consumption','input-toll'].forEach(id => {
+        
+        ['input-vehicle-cost', 'input-clothing-cost', 'input-staff-cost', 'input-races','input-km','input-registration','input-travel-days','input-travel-daily','input-fuel-price','input-consumption','input-toll'].forEach(id => {
             document.getElementById(id).addEventListener('change', recalc);
         });
+
         document.getElementById('btn-sync-dynamic').addEventListener('click', e => {
             e.preventDefault();
             const params = getScenarioParams();
@@ -374,7 +427,19 @@
             recalc();
         });
     }
+    
     function getScenarioParams() {
+        // Nuovi Input Fissi
+        const vehicleCost   = Number(document.getElementById('input-vehicle-cost').value) || 0;
+        const clothingCost  = Number(document.getElementById('input-clothing-cost').value) || 0;
+        const staffCost     = Number(document.getElementById('input-staff-cost').value) || 0;
+        
+        // Aggiorna i costi virtuali nello state
+        updateFixedCostItem('vehicle_cost', vehicleCost);
+        updateFixedCostItem('clothing_cost', clothingCost);
+        updateFixedCostItem('staff_cost', staffCost);
+        
+        // Parametri Variabili
         const races         = Number(document.getElementById('input-races'         ).value) || 0;
         const avgKmPerRace  = Number(document.getElementById('input-km'            ).value) || 0;
         const registrationFee= Number(document.getElementById('input-registration').value) || 0;
@@ -383,18 +448,31 @@
         const fuelPrice      = Number(document.getElementById('input-fuel-price' ).value) || 0;
         const fuelCons100    = Number(document.getElementById('input-consumption').value) || 0;
         const tollPerKm      = Number(document.getElementById('input-toll'        ).value) || 0;
-        // Rimosso: const sponsor        = Number(document.getElementById('input-sponsor'     ).value) || 0;
-        const sponsor = 0; // Forziamo a zero, non c'è input
+        const sponsor = 0; // Entrate forzate a zero
+
         const fuelCostPerKm  = (fuelCons100 / 100) * fuelPrice;
-        const totalKm        = races * avgKmPerRace;
+        const totalKm        = races * avgKmPerRace * 2; // Andata e Ritorno
         const totalTravel    = races * travelDaysPR;
-        return { races, avgKmPerRace, registrationFee, travelDaysPerRace: travelDaysPR, dailyTravelCost, fuelPrice, fuelConsumptionPer100Km: fuelCons100, tollPerKm, sponsorContribution: sponsor, fuelCostPerKm, totalKm, totalTravelDays: totalTravel };
+        
+        return { 
+            races, avgKmPerRace, registrationFee, travelDaysPerRace: travelDaysPR, dailyTravelCost, 
+            fuelPrice, fuelConsumptionPer100Km: fuelCons100, tollPerKm, sponsorContribution: sponsor, 
+            fuelCostPerKm, totalKm, totalTravelDays: totalTravel,
+            vehicleCost, clothingCost, staffCost // Nuovi costi fissi
+        };
     }
+
+    function updateFixedCostItem(id, value) {
+        const item = state.fixedCosts.find(el => el.id === id);
+        if (item) item.amount = value;
+    }
+
     function updateDynamicInsights(params) {
         document.getElementById('insight-fuel-km').textContent  = `${formatCurrency(params.fuelCostPerKm)} / km`;
         document.getElementById('insight-total-km').textContent = `${formatNumber(params.totalKm)} km`;
         document.getElementById('insight-travel-days').textContent = `${formatNumber(params.totalTravelDays)} gg`;
     }
+
     function updateCostItem(type, id, value, decimals = 2) {
         const targetArray = type === 'fixed' ? state.fixedCosts : state.variableCosts;
         const item = targetArray.find(el => el.id === id);
@@ -404,18 +482,26 @@
         const input = document.querySelector(`.cost-input[data-type="${type}"][data-id="${id}"]`);
         if (input) input.value = amount;
     }
+
     function applyScenarioAdjustments(params) {
+        // Questi sono i costi variabili che vengono sovrascritti dai parametri di scenario
         updateCostItem('variable', 'race_fees',  params.registrationFee, 2); 
+        // Vitto/Alloggio: Giorni trasferta * Costo giornaliero
         updateCostItem('variable', 'travel_days', params.travelDaysPerRace * params.dailyTravelCost, 2); 
+        // Carburante per km
         updateCostItem('variable', 'fuel',         params.fuelCostPerKm, 3); 
+        // Pedaggio per km
         updateCostItem('variable', 'toll',         params.tollPerKm,     3); 
     }
+
     function calculateScenario(params) {
         const items = [];
         const datasets = [...state.fixedCosts, ...state.variableCosts];
+        
         datasets.forEach(item => {
             let seasonCost = 0, perRaceCost = 0;
             if (item.metric === 'season') {
+                // I costi fissi (anche quelli virtuali degli input) sono presi direttamente da item.amount
                 seasonCost = item.amount;
                 perRaceCost = params.races > 0 ? seasonCost / params.races : seasonCost;
             } else if (item.metric === 'per_race') {
@@ -423,37 +509,41 @@
                 seasonCost  = perRaceCost * params.races;
             } else if (item.metric === 'per_km') {
                 const costPerKm = item.amount;
-                perRaceCost = costPerKm * params.avgKmPerRace;
+                // Calcoliamo il costo per km per una gara (andata e ritorno)
+                perRaceCost = costPerKm * params.avgKmPerRace * 2; 
                 seasonCost  = costPerKm * params.totalKm;
             }
             items.push({ id: item.id, name: item.name, category: item.category, perRaceCost, seasonCost });
         });
+        
         const totalExpenses = items.reduce((sum, item) => sum + item.seasonCost, 0);
-        const totalRevenues = 0; // Entrate forzate a zero
-        const netBalance    = totalRevenues - totalExpenses; // Sarà negativo = -Costi Totali
+        
         const categories = items.reduce((acc, item) => {
             acc[item.category] = (acc[item.category] || 0) + item.seasonCost;
             return acc;
         }, {});
-        return { items, totalExpenses, totalRevenues, netBalance, categories, params };
+        
+        return { items, totalExpenses, categories, params };
     }
+
     function updateSummary(result) {
         document.getElementById('season-total').textContent = formatCurrency(result.totalExpenses);
         const avgPerRace = result.params.races > 0 ? result.totalExpenses / result.params.races : result.totalExpenses;
         document.getElementById('race-cost').textContent = formatCurrency(avgPerRace);
         
-        // Modificato per mostrare il COSTO TOTALE invece del Saldo Netto
-        const netBalanceEl = document.getElementById('net-balance');
-        netBalanceEl.textContent = formatCurrency(result.totalExpenses); 
-        // Rimuoviamo la logica di colorazione poiché ora mostra i costi (sempre positivi)
-        netBalanceEl.style.color = 'var(--text)'; 
+        // Mostriamo Costi Totali (uguale a Budget Stagionale)
+        document.getElementById('net-balance').textContent = formatCurrency(result.totalExpenses); 
+        document.getElementById('net-balance').style.color = 'var(--text)'; 
 
         document.getElementById('total-km').textContent = formatNumber(result.params.totalKm);
         document.getElementById('total-travel-days').textContent = formatNumber(result.params.totalTravelDays);
     }
+
     function renderDetailTable(result) {
         const detailBody = document.getElementById('detail-body');
         detailBody.innerHTML = '';
+        
+        // Mostriamo TUTTE le voci, anche quelle mosse negli input (identificabili con un nome)
         result.items.forEach(item => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -466,13 +556,16 @@
         });
         document.getElementById('detail-total').textContent = formatCurrency(result.totalExpenses);
     }
+
     function updateCharts(result) {
+        // ... (Logica Chart invariata, usa result.categories)
         const categories = Object.keys(result.categories);
         const labels     = categories.map(formatCategory);
         const values     = categories.map(cat => result.categories[cat]);
         const palette    = ['#2563eb','#f97316','#14b8a6','#6366f1','#0f9d58','#9333ea','#ef4444'];
         if (state.charts.bar) state.charts.bar.destroy();
         if (state.charts.pie) state.charts.pie.destroy();
+        
         // Bar chart
         const barCtx = document.getElementById('bar-chart');
         state.charts.bar = new Chart(barCtx, {
@@ -497,6 +590,7 @@
                 }
             }
         });
+
         // Pie chart
         const pieCtx = document.getElementById('pie-chart');
         state.charts.pie = new Chart(pieCtx, {
@@ -523,20 +617,23 @@
             }
         });
     }
+
     function formatCurrency(value) {
         if (!isFinite(value)) return '–';
-        // Rimuoviamo il segno '+' e forziamo a non avere segno (perché mostriamo solo i costi)
         const absoluteValue = Math.abs(value); 
         return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(absoluteValue);
     }
+    
     function formatPercentage(value) {
         if (!isFinite(value)) return '0%';
         return new Intl.NumberFormat('it-IT', { style: 'percent', maximumFractionDigits: 1 }).format(value);
     }
+    
     function formatNumber(value) {
         if (!isFinite(value)) return '0';
         return new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 }).format(value);
     }
+    
     function formatCategory(code) {
         const map = {
             iscrizioni: 'Iscrizioni',
@@ -547,6 +644,7 @@
         };
         return map[code] || code;
     }
+    
     function recalc() {
         const params = getScenarioParams();
         updateDynamicInsights(params);
@@ -555,6 +653,7 @@
         renderDetailTable(result);
         updateCharts(result);
     }
+    
     document.addEventListener('DOMContentLoaded', async () => {
         try {
             await loadCostModel();
