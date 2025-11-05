@@ -1,0 +1,81 @@
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/data/default_costs.json b/data/default_costs.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..f416443b16a39a9b09498ab2c1792d7cbaa37e82
+--- /dev/null
++++ b/data/default_costs.json
+@@ -0,0 +1,71 @@
++{
++  "fixed_costs": [
++    {
++      "id": "vehicle",
++      "name": "Mezzo fornito",
++      "amount": 14500,
++      "type": "fixed",
++      "metric": "season",
++      "category": "logistica"
++    },
++    {
++      "id": "insurance",
++      "name": "Assicurazione",
++      "amount": 3200,
++      "type": "fixed",
++      "metric": "season",
++      "category": "logistica"
++    },
++    {
++      "id": "maintenance",
++      "name": "Manutenzioni programmate",
++      "amount": 5200,
++      "type": "fixed",
++      "metric": "season",
++      "category": "manutenzione"
++    }
++  ],
++  "variable_costs": [
++    {
++      "id": "registrations",
++      "name": "Iscrizioni gara",
++      "amount": 850,
++      "type": "variable",
++      "metric": "per_race",
++      "category": "iscrizioni"
++    },
++    {
++      "id": "travel",
++      "name": "Trasferte carburante e pedaggi",
++      "amount": 0.58,
++      "type": "variable",
++      "metric": "per_km",
++      "category": "trasferte"
++    },
++    {
++      "id": "lodging",
++      "name": "Vitto e alloggio",
++      "amount": 1350,
++      "type": "variable",
++      "metric": "per_race",
++      "category": "logistica"
++    },
++    {
++      "id": "consumables",
++      "name": "Materiali di consumo",
++      "amount": 480,
++      "type": "variable",
++      "metric": "per_race",
++      "category": "logistica"
++    }
++  ],
++  "defaults": {
++    "races": 18,
++    "avgKmPerRace": 420,
++    "fuelPrice": 1.82,
++    "fuelConsumptionPer100Km": 11.5,
++    "tollPerKm": 0.07,
++    "sponsorContribution": 28000,
++    "evisoSavingPct": 0.12
++  }
++}
+ 
+EOF
+)
