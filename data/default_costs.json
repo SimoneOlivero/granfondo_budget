@@ -1,12 +1,12 @@
 {
   "defaults": {
-    "races": 30,
+    "races": 20,
     "avgKmPerRace": 500,
     "registrationFee": 50,
     "travelDaysPerRace": 1.5,
-    "dailyTravelCost": 250,
+    "dailyTravelCost": 120,
     "fuelPrice": 1.70,
-    "fuelConsumptionPer100Km": 11.5,
+    "fuelConsumptionPer100Km": 14,
     "tollPerKm": 0.08,
     "sponsorContribution": 20000
   },
