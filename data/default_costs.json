@@ -6,7 +6,7 @@
     "travelDaysPerRace": 1.5,
     "dailyTravelCost": 100,
     "fuelPrice": 1.70,
-    "fuelConsumptionPer100Km": 11.5,
+    "fuelConsumptionPer100Km": 14,
     "tollPerKm": 0.08,
     
     "vehicleCostMonthly": 600, /* Leasing Furgone + Assicurazione veicolo MENSILE */
