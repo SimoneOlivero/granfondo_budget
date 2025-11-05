@@ -4,19 +4,18 @@
     "avgKmPerRace": 500,
     "registrationFee": 50,
     "travelDaysPerRace": 1.5,
-    "dailyTravelCost": 120,
+    "dailyTravelCost": 100,
     "fuelPrice": 1.70,
-    "fuelConsumptionPer100Km": 14,
+    "fuelConsumptionPer100Km": 11.5,
     "tollPerKm": 0.08,
-    "sponsorContribution": 20000
+    
+    "vehicleCostMonthly": 600, /* Leasing Furgone + Assicurazione veicolo MENSILE */
+    "clothingCost": 1000,    /* Kit Abbigliamento/Divise Annuale */
+    "adminCost": 500,       /* Altri Costi Fissi Annuali */
+    "bikeMaintPerRace": 20   /* Manutenzione Bici/Ricambi per gara */
   },
   "fixed_costs": [
-    { "id": "van_lease", "name": "Leasing Furgone/Auto", "amount": 7200, "metric": "season", "category": "logistica" },
-    { "id": "mech_salary", "name": "Stipendio Meccanico/DS", "amount": 18000, "metric": "season", "category": "staff" },
-    { "id": "insurance_rc", "name": "Assicurazione Responsabilità Civile", "amount": 1200, "metric": "season", "category": "staff" },
-    { "id": "office_exp", "name": "Costi Amministrativi e Sede", "amount": 1500, "metric": "season", "category": "staff" },
-    { "id": "clothing_kit", "name": "Kit Abbigliamento/Divise (Stagione)", "amount": 5000, "metric": "season", "category": "manutenzione" },
-    { "id": "van_insurance", "name": "Assicurazione/Tasse Veicolo", "amount": 1800, "metric": "season", "category": "logistica" }
+    /* Lasciato vuoto */
   ],
   "variable_costs": [
     { "id": "race_fees", "name": "Quote Iscrizione Gara (Costo unitario)", "amount": 50, "metric": "per_race", "category": "iscrizioni" },
