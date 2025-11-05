@@ -1,0 +1,1834 @@
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/index.html b/index.html
+index b786bb583b5c61b8163d3084573fbf60defd67fa..e4bfe1931c60654982b8db861b2103fb3ff9ab94 100644
+--- a/index.html
++++ b/index.html
+@@ -1,1029 +1,796 @@
+-<!DOCTYPE html>
+-<html lang="it">
+-<head>
+-    <meta charset="UTF-8">
+-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+-    <title>Simulatore Dettagliato Budget Squadra Ciclistica Continental</title>
+-    <script src="https://cdn.tailwindcss.com"></script>
+-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+-    <style>
+-        /* Base styles for body and container */
+-        body {
+-            font-family: 'Inter', sans-serif;
+-            background-color: #f0f4f8;
+-            color: #334155;
+-            display: flex;
+-            flex-direction: column; /* Changed to column to place buttons at the very bottom */
+-            justify-content: center;
+-            align-items: center; /* Center content horizontally */
+-            min-height: 100vh;
+-            padding: 20px;
+-            box-sizing: border-box;
+-        }
+-        .container {
+-            background-color: #ffffff;
+-            border-radius: 12px;
+-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+-            padding: 30px;
+-            width: 100%;
+-            max-width: 1600px; /* Max width for desktop */
+-            display: flex;
+-            flex-direction: column; /* Stack vertically on small screens */
+-            gap: 30px;
+-            margin-bottom: 20px; /* Add margin to separate from buttons */
+-        }
+-
+-        /* Responsive layout for larger screens */
+-        @media (min-width: 1024px) {
+-            .container {
+-                flex-direction: row; /* Side-by-side on large screens */
+-            }
+-        }
+-
+-        /* Section styling */
+-        .input-section, .output-section {
+-            flex: 1;
+-            padding: 20px;
+-            border-radius: 8px;
+-            background-color: #f8fafc;
+-            border: 1px solid #e2e8f0;
+-        }
+-        .input-section {
+-            min-width: 300px; /* Minimum width for input section */
+-        }
+-
+-        /* Headings */
+-        h1, h2, h3 {
+-            color: #1e293b;
+-            font-weight: 700;
+-            margin-bottom: 20px;
+-        }
+-        h1 {
+-            font-size: 2.25rem; /* text-4xl */
+-            text-align: center;
+-            width: 100%;
+-        }
+-        h2 {
+-            font-size: 1.5rem; /* text-2xl */
+-        }
+-        h3 {
+-            font-size: 1.25rem; /* text-xl */
+-            color: #475569;
+-        }
+-
+-        /* Labels and Inputs */
+-        label {
+-            display: block;
+-            margin-bottom: 8px;
+-            font-weight: 600;
+-            color: #475569;
+-        }
+-        input[type="number"], input[type="text"] {
+-            width: 100%;
+-            padding: 10px 12px;
+-            border: 1px solid #cbd5e1;
+-            border-radius: 6px;
+-            font-size: 1rem;
+-            color: #334155;
+-            background-color: #ffffff;
+-            transition: border-color 0.2s ease-in-out;
+-            margin-bottom: 0; /* Managed by parent grid-item */
+-        }
+-        select {
+-            width: 100%;
+-            padding: 10px 12px;
+-            border: 1px solid #cbd5e1;
+-            border-radius: 6px;
+-            font-size: 1rem;
+-            color: #334155;
+-            background-color: #ffffff;
+-            transition: border-color 0.2s ease-in-out;
+-            -webkit-appearance: none; /* Remove default arrow */
+-            -moz-appearance: none;
+-            appearance: none;
+-            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22%23475569%22%3E%3Cpath%20fill-rule%3D%22evenodd%22%20d%3D%22M5.293%207.293a1%201%200%20011.414%200L10%2010.586l3.293-3.293a1%201%200%20111.414%201.414l-4%204a1%201%200%2001-1.414%200l-4-4a1%201%200%20010-1.414z%22%20clip-rule%3D%22evenodd%22%2F%3E%3C%2Fsvg%3E');
+-            background-repeat: no-repeat;
+-            background-position: right 0.75rem center;
+-            background-size: 1.5em 1.5em;
+-            padding-right: 2.5rem;
+-            margin-bottom: 0; /* Managed by parent grid-item */
+-        }
+-        input[type="number"]:focus, input[type="text"]:focus, select:focus {
+-            outline: none;
+-            border-color: #6366f1;
+-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+-        }
+-
+-        /* Table styling */
+-        .table-container {
+-            overflow-x: auto; /* Allows horizontal scrolling on small screens */
+-            border-radius: 8px;
+-            border: 1px solid #e2e8f0;
+-        }
+-        table {
+-            width: 100%;
+-            border-collapse: collapse;
+-            font-size: 0.95rem;
+-        }
+-        th, td {
+-            padding: 12px 15px;
+-            text-align: left;
+-            border-bottom: 1px solid #e2e8f0;
+-        }
+-        th {
+-            background-color: #eef2f6;
+-            font-weight: 600;
+-            color: #475569;
+-            text-transform: uppercase;
+-        }
+-        tr:last-child td {
+-            border-bottom: none;
+-        }
+-        tr:nth-child(even) {
+-            background-color: #f8fafc;
+-        }
+-        .total-row {
+-            font-weight: 700;
+-            background-color: #dbeafe !important;
+-            color: #1e3a8a;
+-        }
+-
+-        /* Notes and buttons */
+-        .note {
+-            font-size: 0.85rem;
+-            color: #64748b;
+-            margin-top: 10px;
+-        }
+-        .add-button {
+-            background-color: #4f46e5;
+-            color: white;
+-            padding: 10px 15px;
+-            border-radius: 6px;
+-            font-weight: 600;
+-            cursor: pointer;
+-            transition: background-color 0.2s ease-in-out;
+-            margin-top: 10px;
+-            display: inline-block;
+-        }
+-        .add-button:hover {
+-            background-color: #4338ca;
+-        }
+-        .remove-button {
+-            background-color: #ef4444;
+-            color: white;
+-            padding: 6px 10px;
+-            border-radius: 4px;
+-            font-size: 0.8rem;
+-            cursor: pointer;
+-            transition: background-color 0.2s ease-in-out;
+-            margin-left: 10px;
+-        }
+-        .remove-button:hover {
+-            background-color: #dc2626;
+-        }
+-        .custom-item {
+-            display: flex;
+-            gap: 10px;
+-            margin-bottom: 10px;
+-            align-items: center;
+-        }
+-        .custom-item input[type="text"], .custom-item input[type="number"] {
+-            margin-bottom: 0;
+-        }
+-
+-        /* Chart container */
+-        .chart-container {
+-            width: 100%;
+-            max-width: 600px;
+-            margin: 30px auto;
+-            padding: 20px;
+-            background-color: #f8fafc;
+-            border-radius: 8px;
+-            border: 1px solid #e2e8f0;
+-        }
+-
+-        /* Grid item spacing for responsive forms */
+-        .grid-item {
+-            margin-bottom: 1rem;
+-        }
+-        .grid-item:last-child {
+-            margin-bottom: 0;
+-        }
+-        /* Removed .signature style as the element is removed */
+-
+-        /* Styles for the smaller export buttons at the bottom */
+-        .export-buttons-container {
+-            width: 100%;
+-            max-width: 1600px; /* Match container max-width */
+-            display: flex;
+-            flex-direction: column; /* Stack on mobile */
+-            gap: 1rem; /* Space between buttons */
+-            justify-content: center;
+-            align-items: center;
+-            padding: 20px;
+-            box-sizing: border-box;
+-        }
+-        @media (min-width: 640px) { /* sm breakpoint */
+-            .export-buttons-container {
+-                flex-direction: row; /* Side-by-side on larger screens */
+-            }
+-        }
+-        .export-buttons-container button {
+-            padding: 0.75rem 1.25rem; /* Smaller padding */
+-            font-size: 0.875rem; /* text-sm */
+-            border-radius: 0.5rem; /* rounded-lg */
+-            width: 100%; /* Full width on mobile */
+-            max-width: 200px; /* Max width for individual button */
+-        }
+-        @media (min-width: 640px) {
+-             .export-buttons-container button {
+-                width: auto; /* Auto width on larger screens */
+-             }
+-        }
+-    </style>
+-</head>
+-<body>
+-    <div class="container">
+-        <!-- Logo and Main Title -->
+-        <div class="w-full text-center mb-6">
+-            <img src="logo_uci_continental.png" alt="Logo UCI Continental" class="mx-auto block h-20 mb-4 rounded-lg">
+-            <h1>Simulatore Dettagliato Budget Squadra Ciclistica Continental</h1>
+-        </div>
+-
+-        <div class="input-section">
+-            <h2 class="text-2xl font-bold mb-6">Parametri di Input</h2>
+-
+-            <h3 class="font-semibold text-lg mb-4 text-gray-700">Personale</h3>
+-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
+-                <div class="grid-item">
+-                    <label for="numAthletes">Numero Atleti (8-12):</label>
+-                    <input type="number" id="numAthletes" value="10" min="8" max="12">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="athleteRAL">RAL Atleta (€/anno):</label>
+-                    <select id="athleteRAL">
+-                        <option value="0">Da definire</option>
+-                        <option value="25000">25.000 €</option>
+-                        <option value="30000" selected>30.000 €</option>
+-                        <option value="35000">35.000 €</option>
+-                        <option value="40000">40.000 €</option>
+-                    </select>
+-                </div>
+-                <div class="grid-item">
+-                    <label for="numGM">Numero General Manager:</label>
+-                    <input type="number" id="numGM" value="1" min="0">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="gmRAL">RAL General Manager (€/anno):</label>
+-                    <select id="gmRAL">
+-                        <option value="0">Da definire</option>
+-                        <option value="40000">40.000 €</option>
+-                        <option value="50000" selected>50.000 €</option>
+-                        <option value="60000">60.000 €</option>
+-                    </select>
+-                </div>
+-                <div class="grid-item">
+-                    <label for="numDS">Numero Direttori Sportivi:</label>
+-                    <input type="number" id="numDS" value="3" min="0">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="dsRAL">RAL Direttore Sportivo (€/anno):</label>
+-                    <select id="dsRAL">
+-                        <option value="0">Da definire</option>
+-                        <option value="30000">30.000 €</option>
+-                        <option value="35000" selected>35.000 €</option>
+-                        <option value="40000">40.000 €</option>
+-                    </select>
+-                </div>
+-                <div class="grid-item">
+-                    <label for="numMechanics">Numero Meccanici:</label>
+-                    <input type="number" id="numMechanics" value="4" min="0">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="mechanicRAL">RAL Meccanico (€/anno):</label>
+-                    <select id="mechanicRAL">
+-                        <option value="0">Da definire</option>
+-                        <option value="20000">20.000 €</option>
+-                        <option value="25000" selected>25.000 €</option>
+-                        <option value="30000">30.000 €</option>
+-                    </select>
+-                </div>
+-                <div class="grid-item">
+-                    <label for="numMasseurs">Numero Massaggiatori:</label>
+-                    <input type="number" id="numMasseurs" value="3" min="0">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="masseurRAL">RAL Massaggiatore (€/anno):</label>
+-                    <select id="masseurRAL">
+-                        <option value="0">Da definire</option>
+-                        <option value="20000">20.000 €</option>
+-                        <option value="25000" selected>25.000 €</option>
+-                        <option value="30000">30.000 €</option>
+-                    </select>
+-                </div>
+-                <div class="grid-item">
+-                    <label for="numOtherStaff">Numero Altro Staff (es. Logista, Addetto Stampa):</label>
+-                    <input type="number" id="numOtherStaff" value="4" min="0">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="otherStaffRAL">RAL Altro Staff (€/anno):</label>
+-                    <select id="otherStaffRAL">
+-                        <option value="0">Da definire</option>
+-                        <option value="15000">15.000 €</option>
+-                        <option value="20000" selected>20.000 €</option>
+-                        <option value="25000">25.000 €</option>
+-                    </select>
+-                </div>
+-            </div>
+-
+-            <h3 class="font-semibold text-lg mt-8 mb-4 text-gray-700">Logistica e Mezzi</h3>
+-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
+-                <div class="grid-item">
+-                    <label for="costPerDayPerAthlete">Costo Medio Vitto e Alloggi per Giorno/Atleta (€):</label>
+-                    <input type="number" id="costPerDayPerAthlete" value="150" min="0">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="numRaceDays">Numero Giornate di Gara/Trasferta:</label>
+-                    <input type="number" id="numRaceDays" value="120" min="0">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="costPerRaceEntry">Costo Medio Iscrizione per Gara (€):</label>
+-                    <input type="number" id="costPerRaceEntry" value="200" min="0">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="numCars">Numero Auto:</label>
+-                    <input type="number" id="numCars" value="4" min="0">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="kmPerCar">Km Annuali per Auto (cad.):</label>
+-                    <input type="text" id="kmPerCar" value="50000" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatIntegerInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="costPerKmCar">Costo Carburante/Pedaggi per Auto (€/km):</label>
+-                    <input type="text" id="costPerKmCar" value="0,25" step="0.01" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatDecimalInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="numVans">Numero Furgoni:</label>
+-                    <input type="number" id="numVans" value="2" min="0">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="kmPerVan">Km Annuali per Furgone (cad.):</label>
+-                    <input type="text" id="kmPerVan" value="40000" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatIntegerInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="costPerKmVans">Costo Carburante/Pedaggi per Furgone (€/km):</label>
+-                    <input type="text" id="costPerKmVans" value="0,38" step="0.01" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatDecimalInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="numBus">Numero Pullman:</label>
+-                    <input type="number" id="numBus" value="1" min="0">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="kmPerBus">Km Annuali per Pullman (cad.):</label>
+-                    <input type="text" id="kmPerBus" value="30000" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatIntegerInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="costPerKmBus">Costo Carburante/Pedaggi per Pullman (€/km):</label>
+-                    <input type="text" id="costPerKmBus" value="0,65" step="0.01" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatDecimalInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="costCars">Costo Auto (leasing/acquisto) (€):</label>
+-                    <input type="text" id="costCars" value="80000" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatMonetaryInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="costVans">Costo Furgoni (leasing/acquisto) (€):</label>
+-                    <input type="text" id="costVans" value="70000" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatMonetaryInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="costBus">Costo Pullman (acquisto/leasing) (€):</label>
+-                    <input type="text" id="costBus" value="300000" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatMonetaryInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="costVehicleOutfitting">Costo Allestimento Mezzi (€):</label>
+-                    <input type="text" id="costVehicleOutfitting" value="50000" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatMonetaryInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="materialCost">Costo Materiale Tecnico (Bici, abbigliamento, ricambi) (€):</label>
+-                    <input type="text" id="materialCost" value="40000" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatMonetaryInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="hqCost">Costo Sede Operativa (Affitto + Utenze) (€):</label>
+-                    <input type="text" id="hqCost" value="20000" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatMonetaryInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="insuranceCost">Costo Assicurazioni e Licenze (€):</label>
+-                    <input type="text" id="insuranceCost" value="15000" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatMonetaryInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="commsMarketingCost">Costo Comunicazione e Marketing (€):</label>
+-                    <input type="text" id="commsMarketingCost" value="10000" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatMonetaryInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="bankGuaranteeCost">Costo Garanzia Bancaria (€):</label>
+-                    <input type="text" id="bankGuaranteeCost" value="30000" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatMonetaryInput(this); updateBudget();">
+-                </div>
+-            </div>
+-
+-            <h3 class="text-xl font-bold mt-8 mb-4 text-gray-700">Spese Personalizzate</h3>
+-            <div id="customExpensesContainer">
+-                <!-- Custom expenses will be added here -->
+-            </div>
+-            <button class="add-button" onclick="addCustomItem('expense')">Aggiungi Spesa Personalizzata</button>
+-
+-            <h3 class="text-xl font-bold mt-8 mb-4 text-gray-700">Entrate (Sponsor e Altro)</h3>
+-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4">
+-                <div class="grid-item">
+-                    <label for="sponsor1Amount">Sponsor 1 (Nome Primo) (€/anno):</label>
+-                    <input type="text" id="sponsor1Amount" value="1000000" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatMonetaryInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="sponsor2Amount">Sponsor 2 (Nome Secondo) (€/anno):</label>
+-                    <input type="text" id="sponsor2Amount" value="400000" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatMonetaryInput(this); updateBudget();">
+-                </div>
+-                <div class="grid-item">
+-                    <label for="minorSponsorsAmount">Sponsor Minori (Somma) (€/anno):</label>
+-                    <input type="text" id="minorSponsorsAmount" value="250000" min="0"
+-                        onfocus="unformatInput(this);" onblur="formatMonetaryInput(this); updateBudget();">
+-                </div>
+-            </div>
+-            <div id="customRevenuesContainer">
+-                <!-- Custom revenues will be added here -->
+-            </div>
+-            <button class="add-button" onclick="addCustomItem('revenue')">Aggiungi Entrata Personalizzata</button>
+-
+-            <p class="note mt-6">
+-                *I valori predefiniti sono basati sulle stime fornite. Modifica i campi per simulare scenari diversi.
+-            </p>
+-        </div>
+-
+-        <div class="output-section">
+-            <h2 class="text-2xl font-bold mb-6">Proiezione del Budget (Simulata)</h2>
+-            <div class="table-container mb-8">
+-                <table id="budgetTable">
+-                    <thead>
+-                        <tr>
+-                            <th>Voce / Descrizione</th>
+-                            <th>Importo (€)</th>
+-                            <th>Percentuale (%)</th>
+-                        </tr>
+-                    </thead>
+-                    <tbody>
+-                        <!-- Dati del budget verranno inseriti qui dal JavaScript -->
+-                    </tbody>
+-                    <tfoot>
+-                        <tr class="total-row">
+-                            <td>Totale Spese Stimate</td>
+-                            <td id="totalExpenses">0 €</td>
+-                            <td>100%</td>
+-                        </tr>
+-                    </tfoot>
+-                </table>
+-            </div>
+-
+-            <div class="table-container">
+-                <table id="revenueTable">
+-                    <thead>
+-                        <tr>
+-                            <th>Voce / Descrizione</th>
+-                            <th>Importo (€)</th>
+-                            <th>Percentuale (%)</th>
+-                        </tr>
+-                    </thead>
+-                    <tbody>
+-                        <!-- Dati delle entrate verranno inseriti qui dal JavaScript -->
+-                    </tbody>
+-                    <tfoot>
+-                        <tr class="total-row">
+-                            <td>Totale Entrate Stimate</td>
+-                            <td id="totalRevenues">0 €</td>
+-                            <td>100%</td>
+-                        </tr>
+-                    </tfoot>
+-                </table>
+-            </div>
+-
+-            <div class="table-container mt-8">
+-                <table>
+-                    <thead>
+-                        <tr>
+-                            <th>Riepilogo Totale</th>
+-                            <th>Importo (€)</th>
+-                        </tr>
+-                    </thead>
+-                    <tbody>
+-                        <tr class="total-row">
+-                            <td>**Saldo Netto (Entrate - Spese)**</td>
+-                            <td id="netBalance">0 €</td>
+-                        </tr>
+-                    </tbody>
+-                </table>
+-            </div>
+-
+-            <div class="chart-container">
+-                <h3 class="text-xl font-bold text-center mb-4">Ripartizione delle Spese</h3>
+-                <canvas id="budgetChart"></canvas>
+-            </div>
+-
+-            <div class="chart-container">
+-                <h3 class="text-xl font-bold text-center mb-4">Ripartizione delle Entrate Sponsor</h3>
+-                <canvas id="sponsorChart"></canvas>
+-            </div>
+-
+-            <h2 class="text-2xl font-bold mt-8 mb-6">Rischi e Variabili (Riferimento)</h2>
+-            <div class="table-container">
+-                <table>
+-                    <thead>
+-                        <tr>
+-                            <th>Voce / Descrizione</th>
+-                            <th>Potenziale Impatto</th>
+-                        </tr>
+-                    </thead>
+-                    <tbody>
+-                        <tr><td>Aumento Costo Carburante</td><td>Incremento significativo delle spese relative ai trasporti e agli spostamenti della squadra.</td></tr>
+-                        <tr><td>Perdita o Riduzione Sponsor</td><td>Diminuzione delle entrate, con conseguente necessità di revisione del budget operativo.</td></tr>
+-                        <tr><td>Ritardi o Cancellazioni Gare</td><td>Generazione di costi aggiuntivi imprevisti e/o una riduzione delle entrate derivanti dai premi.</td></tr>
+-                        <tr><td>Spese Mediche Impreviste</td><td>Aumento degli oneri sanitari e dei costi associati al recupero fisico degli atleti in caso di infortuni.</td></tr>
+-                    </tbody>
+-                </table>
+-            </div>
+-        </div>
+-        <!-- Removed the signature div -->
+-    </div>
+-
+-    <!-- Export Buttons Container -->
+-    <div class="export-buttons-container">
+-        <button onclick="exportAllPDF()" class="bg-red-600 text-white shadow hover:bg-red-700 transition">Esporta in PDF</button>
+-        <button onclick="exportAllExcel()" class="bg-green-600 text-white shadow hover:bg-green-700 transition">Esporta in Excel</button>
+-    </div>
+-
+-    <!-- External libraries for export -->
+-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+-
+-    <script>
+-        let budgetChart; // Global variable for the expense chart instance
+-        let sponsorChart; // Global variable for the sponsor chart instance
+-
+-        // Function to format numbers as currency
+-        function formatCurrency(amount) {
+-            return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' }).format(amount);
+-        }
+-
+-        // Function to format integer inputs with thousands separators
+-        function formatIntegerInput(element) {
+-            let value = parseFloat(element.value.replace(/\./g, '').replace(/,/g, '.'));
+-            if (!isNaN(value)) {
+-                element.value = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+-            } else {
+-                element.value = ''; // Clear if not a valid number
+-            }
+-        }
+-
+-        // Function to format monetary inputs with thousands separators (0 decimals)
+-        function formatMonetaryInput(element) {
+-            let value = parseFloat(element.value.replace(/\./g, '').replace(/,/g, '.'));
+-            if (!isNaN(value)) {
+-                element.value = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+-            } else {
+-                element.value = '';
+-            }
+-        }
+-
+-        // Function to format decimal inputs (e.g., cost per km)
+-        function formatDecimalInput(element) {
+-            let value = parseFloat(element.value.replace(/\./g, '').replace(/,/g, '.'));
+-            if (!isNaN(value)) {
+-                element.value = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+-            } else {
+-                element.value = '';
+-            }
+-        }
+-
+-        // Function to remove thousands separators before editing
+-        function unformatInput(element) {
+-            element.value = element.value.replace(/\./g, ''); // Removes the dot as thousands separator
+-            // If commas were used as decimal separators, you'd also do .replace(/,/g, '.')
+-        }
+-
+-        // Function to add a custom expense or revenue item
+-        function addCustomItem(type) {
+-            const containerId = type === 'expense' ? 'customExpensesContainer' : 'customRevenuesContainer';
+-            const container = document.getElementById(containerId);
+-
+-            const newItemDiv = document.createElement('div');
+-            newItemDiv.className = 'custom-item';
+-
+-            const descriptionInput = document.createElement('input');
+-            descriptionInput.type = 'text';
+-            descriptionInput.placeholder = 'Descrizione';
+-            descriptionInput.className = `custom-${type}-description`;
+-            descriptionInput.addEventListener('input', updateBudget);
+-
+-            const amountInput = document.createElement('input');
+-            amountInput.type = 'text'; // Changed to text for formatting
+-            amountInput.placeholder = 'Importo (€)';
+-            amountInput.value = '0';
+-            amountInput.min = '0';
+-            amountInput.className = `custom-${type}-amount`;
+-            amountInput.addEventListener('input', updateBudget);
+-            amountInput.addEventListener('focus', function() { unformatInput(this); });
+-            amountInput.addEventListener('blur', function() { formatMonetaryInput(this); updateBudget(); });
+-
+-            const removeButton = document.createElement('button');
+-            removeButton.className = 'remove-button';
+-            removeButton.textContent = 'Rimuovi';
+-            removeButton.onclick = function() {
+-                container.removeChild(newItemDiv);
+-                updateBudget(); // Recalculate budget after removal
+-            };
+-
+-            newItemDiv.appendChild(descriptionInput);
+-            newItemDiv.appendChild(amountInput);
+-            newItemDiv.appendChild(removeButton);
+-            container.appendChild(newItemDiv);
+-
+-            updateBudget(); // Update budget after adding a new item
+-        }
+-
+-        // Function to calculate and update the budget and return structured data
+-        function updateBudget() {
+-            // Retrieve values from inputs and selects
+-            const inputParams = {
+-                numAthletes: parseInt(document.getElementById('numAthletes').value) || 0,
+-                athleteRAL: parseFloat(document.getElementById('athleteRAL').value) || 0,
+-                numGM: parseInt(document.getElementById('numGM').value) || 0,
+-                gmRAL: parseFloat(document.getElementById('gmRAL').value) || 0,
+-                numDS: parseInt(document.getElementById('numDS').value) || 0,
+-                dsRAL: parseFloat(document.getElementById('dsRAL').value) || 0,
+-                numMechanics: parseInt(document.getElementById('numMechanics').value) || 0,
+-                mechanicRAL: parseFloat(document.getElementById('mechanicRAL').value) || 0,
+-                numMasseurs: parseInt(document.getElementById('numMasseurs').value) || 0,
+-                masseurRAL: parseFloat(document.getElementById('masseurRAL').value) || 0,
+-                numOtherStaff: parseInt(document.getElementById('numOtherStaff').value) || 0,
+-                otherStaffRAL: parseFloat(document.getElementById('otherStaffRAL').value) || 0,
+-
+-                costPerDayPerAthlete: parseFloat(document.getElementById('costPerDayPerAthlete').value) || 0,
+-                numRaceDays: parseInt(document.getElementById('numRaceDays').value) || 0,
+-                costPerRaceEntry: parseFloat(document.getElementById('costPerRaceEntry').value) || 0,
+-
+-                numCars: parseInt(document.getElementById('numCars').value) || 0,
+-                kmPerCar: parseFloat(document.getElementById('kmPerCar').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-                costPerKmCar: parseFloat(document.getElementById('costPerKmCar').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-
+-                numVans: parseInt(document.getElementById('numVans').value) || 0,
+-                kmPerVan: parseFloat(document.getElementById('kmPerVan').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-                costPerKmVans: parseFloat(document.getElementById('costPerKmVans').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-
+-                numBus: parseInt(document.getElementById('numBus').value) || 0,
+-                kmPerBus: parseFloat(document.getElementById('kmPerBus').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-                costPerKmBus: parseFloat(document.getElementById('costPerKmBus').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-
+-                costCars: parseFloat(document.getElementById('costCars').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-                costVans: parseFloat(document.getElementById('costVans').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-                costBus: parseFloat(document.getElementById('costBus').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-                costVehicleOutfitting: parseFloat(document.getElementById('costVehicleOutfitting').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-                materialCost: parseFloat(document.getElementById('materialCost').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-                hqCost: parseFloat(document.getElementById('hqCost').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-                insuranceCost: parseFloat(document.getElementById('insuranceCost').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-                commsMarketingCost: parseFloat(document.getElementById('commsMarketingCost').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-                bankGuaranteeCost: parseFloat(document.getElementById('bankGuaranteeCost').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-
+-                sponsor1Amount: parseFloat(document.getElementById('sponsor1Amount').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-                sponsor2Amount: parseFloat(document.getElementById('sponsor2Amount').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-                minorSponsorsAmount: parseFloat(document.getElementById('minorSponsorsAmount').value.replace(/\./g, '').replace(/,/g, '.')) || 0,
+-            };
+-
+-            // Calculate personnel expenses
+-            const personnelExpenses = [
+-                { name: 'Costo Atleti', amount: inputParams.numAthletes * inputParams.athleteRAL },
+-                { name: 'Costo General Manager', amount: inputParams.numGM * inputParams.gmRAL },
+-                { name: 'Costo Direttori Sportivi', amount: inputParams.numDS * inputParams.dsRAL },
+-                { name: 'Costo Meccanici', amount: inputParams.numMechanics * inputParams.mechanicRAL },
+-                { name: 'Costo Massaggiatori', amount: inputParams.numMasseurs * inputParams.masseurRAL },
+-                { name: 'Costo Altro Staff', amount: inputParams.numOtherStaff * inputParams.otherStaffRAL }
+-            ].filter(item => item.amount > 0);
+-
+-            // Calculate logistics and vehicle expenses
+-            const logisticsVehiclesExpenses = [
+-                { name: 'Vitto e Alloggi', amount: inputParams.numAthletes * inputParams.costPerDayPerAthlete * inputParams.numRaceDays },
+-                { name: 'Iscrizioni Gare', amount: inputParams.numRaceDays * inputParams.costPerRaceEntry },
+-                { name: 'Materiale Tecnico', amount: inputParams.materialCost },
+-                { name: 'Costo Auto (leasing/acquisto)', amount: inputParams.costCars },
+-                { name: 'Costo Furgoni (leasing/acquisto)', amount: inputParams.costVans },
+-                { name: 'Costo Pullman (leasing/acquisto)', amount: inputParams.costBus },
+-                { name: 'Allestimento Mezzi', amount: inputParams.costVehicleOutfitting },
+-                { name: 'Carburante e Pedaggi', amount: (inputParams.numCars * inputParams.kmPerCar * inputParams.costPerKmCar) + (inputParams.numVans * inputParams.kmPerVan * inputParams.costPerKmVans) + (inputParams.numBus * inputParams.kmPerBus * inputParams.costPerKmBus) },
+-                { name: 'Sede Operativa', amount: inputParams.hqCost },
+-                { name: 'Assicurazioni e Licenze', amount: inputParams.insuranceCost },
+-                { name: 'Comunicazione e Marketing', amount: inputParams.commsMarketingCost },
+-                { name: 'Garanzia Bancaria', amount: inputParams.bankGuaranteeCost }
+-            ].filter(item => item.amount > 0);
+-
+-            // Get custom expenses
+-            const customExpenses = [];
+-            document.querySelectorAll('#customExpensesContainer .custom-item').forEach(itemDiv => {
+-                const description = itemDiv.querySelector('.custom-expense-description').value;
+-                const amount = parseFloat(itemDiv.querySelector('.custom-expense-amount').value.replace(/\./g, '').replace(/,/g, '.')) || 0;
+-                if (description && amount > 0) {
+-                    customExpenses.push({ name: description, amount: amount });
+-                }
+-            });
+-
+-            // Combine all expenses
+-            let allExpenses = [...personnelExpenses, ...logisticsVehiclesExpenses, ...customExpenses];
+-            let totalExpenses = allExpenses.reduce((sum, item) => sum + item.amount, 0);
+-            allExpenses = allExpenses.map(item => ({
+-                ...item,
+-                percentage: totalExpenses > 0 ? (item.amount / totalExpenses * 100) : 0
+-            }));
+-
+-            // Calculate revenues
+-            const sponsorRevenues = [
+-                { name: 'Sponsor 1 (Nome Primo)', amount: inputParams.sponsor1Amount },
+-                { name: 'Sponsor 2 (Nome Secondo)', amount: inputParams.sponsor2Amount },
+-                { name: 'Sponsor Minori (Somma)', amount: inputParams.minorSponsorsAmount }
+-            ].filter(item => item.amount > 0);
+-
+-            // Get custom revenues
+-            const customRevenues = [];
+-            document.querySelectorAll('#customRevenuesContainer .custom-item').forEach(itemDiv => {
+-                const description = itemDiv.querySelector('.custom-revenue-description').value;
+-                const amount = parseFloat(itemDiv.querySelector('.custom-revenue-amount').value.replace(/\./g, '').replace(/,/g, '.')) || 0;
+-                if (description && amount > 0) {
+-                    customRevenues.push({ name: description, amount: amount });
+-                }
+-            });
+-
+-            let allRevenues = [...sponsorRevenues, ...customRevenues];
+-            let totalRevenues = allRevenues.reduce((sum, item) => sum + item.amount, 0);
+-            allRevenues = allRevenues.map(item => ({
+-                ...item,
+-                percentage: totalRevenues > 0 ? (item.amount / totalRevenues * 100) : 0
+-            }));
+-
+-            const netBalance = totalRevenues - totalExpenses;
+-
+-            // Update display tables
+-            updateTable(document.querySelector('#budgetTable tbody'), allExpenses, totalExpenses);
+-            updateTable(document.querySelector('#revenueTable tbody'), allRevenues, totalRevenues);
+-            document.getElementById('totalExpenses').textContent = formatCurrency(totalExpenses);
+-            document.getElementById('totalRevenues').textContent = formatCurrency(totalRevenues);
+-            document.getElementById('netBalance').textContent = formatCurrency(netBalance);
+-
+-            // Update charts
+-            updateChart(budgetChart, 'budgetChart', allExpenses, totalExpenses);
+-            updateChart(sponsorChart, 'sponsorChart', sponsorRevenues, totalRevenues); // Sponsor chart only uses sponsor revenues
+-
+-            // Return structured data for export
+-            return {
+-                inputParams,
+-                personnelExpenses,
+-                logisticsVehiclesExpenses,
+-                customExpenses,
+-                sponsorRevenues,
+-                customRevenues,
+-                totalExpenses,
+-                totalRevenues,
+-                netBalance
+-            };
+-        }
+-
+-        // Helper function to update a table
+-        function updateTable(tbodyElement, dataItems, totalAmount) {
+-            tbodyElement.innerHTML = '';
+-            dataItems.forEach(item => {
+-                const row = document.createElement('tr');
+-                row.innerHTML = `
+-                    <td>${item.name}</td>
+-                    <td>${formatCurrency(item.amount)}</td>
+-                    <td>${item.percentage.toFixed(2)}%</td>
+-                `;
+-                tbodyElement.appendChild(row);
+-            });
+-        }
+-
+-        // Generic function to update a chart
+-        function updateChart(chartInstance, canvasId, dataItems, totalAmount) {
+-            const ctx = document.getElementById(canvasId).getContext('2d');
+-
+-            const labels = dataItems.map(item => item.name);
+-            const data = dataItems.map(item => item.amount);
+-
+-            const backgroundColors = data.map((_, i) => `hsl(${i * 30 % 360}, 70%, 60%)`);
+-            const borderColors = data.map((_, i) => `hsl(${i * 30 % 360}, 70%, 40%)`);
+-
+-            if (chartInstance) {
+-                chartInstance.data.labels = labels;
+-                chartInstance.data.datasets[0].data = data;
+-                chartInstance.data.datasets[0].backgroundColor = backgroundColors;
+-                chartInstance.data.datasets[0].borderColor = borderColors;
+-                chartInstance.update();
+-            } else {
+-                chartInstance = new Chart(ctx, {
+-                    type: 'pie',
+-                    data: {
+-                        labels: labels,
+-                        datasets: [{
+-                            data: data,
+-                            backgroundColor: backgroundColors,
+-                            borderColor: borderColors,
+-                            borderWidth: 1
+-                        }]
+-                    },
+-                    options: {
+-                        responsive: true,
+-                        plugins: {
+-                            legend: {
+-                                position: 'top',
+-                            },
+-                            tooltip: {
+-                                callbacks: {
+-                                    label: function(context) {
+-                                        let label = context.label || '';
+-                                        if (label) {
+-                                            label += ': ';
+-                                        }
+-                                        if (context.parsed !== null) {
+-                                            const value = context.parsed;
+-                                            const percentage = totalAmount > 0 ? (value / totalAmount * 100).toFixed(2) : 0;
+-                                            label += `${formatCurrency(value)} (${percentage}%)`;
+-                                        }
+-                                        return label;
+-                                    }
+-                                }
+-                            }
+-                        }
+-                    }
+-                });
+-                // Assign the new chart instance to the global variable
+-                if (canvasId === 'budgetChart') {
+-                    budgetChart = chartInstance;
+-                } else if (canvasId === 'sponsorChart') {
+-                    sponsorChart = chartInstance;
+-                }
+-            }
+-        }
+-
+-        // Add event listeners to all inputs and selects for real-time budget update
+-        document.querySelectorAll('.input-section input, .input-section select').forEach(element => {
+-            if (element.type === 'number' || element.tagName === 'SELECT') {
+-                element.addEventListener('input', updateBudget);
+-            }
+-        });
+-
+-        // Initial budget update on page load
+-        window.onload = function() {
+-            document.querySelectorAll('input[type="text"]').forEach(element => {
+-                if (element.id.includes('KmPer') || element.id.includes('costPerKm')) {
+-                     formatDecimalInput(element);
+-                } else {
+-                    formatMonetaryInput(element);
+-                }
+-            });
+-            updateBudget(); // Initial call to populate tables and charts
+-        };
+-    </script>
+-    <!-- Librerie esterne per esportazione -->
+-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+-
+-    <script>
+-    // ESPORTA LA PAGINA IN PDF (compresi grafici, tabelle e dati)
+-    function exportAllPDF() {
+-      const doc = new window.jspdf.jsPDF('p', 'pt', 'a4');
+-      const container = document.querySelector('.container');
+-      html2canvas(container, { scale: 2 }).then(canvas => { // Increased scale for better quality
+-        const imgData = canvas.toDataURL('image/png');
+-        const pageWidth = doc.internal.pageSize.getWidth();
+-        const pageHeight = doc.internal.pageSize.getHeight();
+-        const imgProps = doc.getImageProperties(imgData);
+-        const pdfWidth = pageWidth;
+-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+-
+-        let position = 0;
+-        const padding = 20; // Padding from top/bottom of page
+-
+-        // If content exceeds one page, split it
+-        if (pdfHeight > pageHeight) {
+-            let heightLeft = pdfHeight;
+-            let pageNum = 1;
+-            while (heightLeft > 0) {
+-                const currentY = -position;
+-                doc.addImage(imgData, 'PNG', 0, currentY, pdfWidth, pdfHeight);
+-                heightLeft -= pageHeight;
+-                if (heightLeft > 0) {
+-                    doc.addPage();
+-                    position += pageHeight;
+-                }
+-            }
+-        } else {
+-            doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+-        }
+-        doc.save('simulatore_budget_squadra.pdf');
+-      }).catch(error => {
+-          console.error("Error generating PDF:", error);
+-          alert("Errore nella generazione del PDF. Controlla la console per i dettagli.");
+-      });
+-    }
+-
+-    // ESPORTA TUTTE LE TABELLE E DETTAGLI IN EXCEL (ogni categoria = un foglio)
+-    function exportAllExcel() {
+-      const data = updateBudget(); // Get all structured data
+-
+-      const wb = XLSX.utils.book_new();
+-
+-      // --- Foglio 1: Riepilogo Generale ---
+-      const wsSummary = XLSX.utils.aoa_to_sheet([
+-        ["Riepilogo Generale"],
+-        ["Voce", "Importo (€)"],
+-        ["Totale Spese Stimate", data.totalExpenses],
+-        ["Totale Entrate Stimate", data.totalRevenues],
+-        ["Saldo Netto (Entrate - Spese)", data.netBalance]
+-      ]);
+-      XLSX.utils.book_append_sheet(wb, wsSummary, "Riepilogo Generale");
+-
+-      // --- Foglio 2: Parametri di Input ---
+-      const inputData = [["Parametro", "Valore"]];
+-      for (const key in data.inputParams) {
+-          if (Object.hasOwnProperty.call(data.inputParams, key)) {
+-              let value = data.inputParams[key];
+-              // Format specific values for better readability in Excel if needed
+-              if (key.includes('RAL') || key.includes('Amount') || key.includes('Cost')) {
+-                  value = parseFloat(value).toLocaleString('it-IT', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+-              } else if (key.includes('KmPer') || key.includes('costPerKm')) {
+-                  value = parseFloat(value).toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+-              }
+-              inputData.push([key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()), value]); // Convert camelCase to readable string
+-          }
+-      }
+-      const wsInput = XLSX.utils.aoa_to_sheet(inputData);
+-      XLSX.utils.book_append_sheet(wb, wsInput, "Parametri di Input");
+-
+-      // --- Foglio 3: Spese Personale ---
+-      const wsPersonnel = XLSX.utils.json_to_sheet(data.personnelExpenses.map(item => ({
+-          Voce: item.name,
+-          'Importo (€)': item.amount,
+-          'Percentuale (%)': item.percentage.toFixed(2) + '%'
+-      })));
+-      XLSX.utils.book_append_sheet(wb, wsPersonnel, "Spese Personale");
+-
+-      // --- Foglio 4: Spese Logistica e Mezzi ---
+-      const wsLogisticsVehicles = XLSX.utils.json_to_sheet(data.logisticsVehiclesExpenses.map(item => ({
+-          Voce: item.name,
+-          'Importo (€)': item.amount,
+-          'Percentuale (%)': item.percentage.toFixed(2) + '%'
+-      })));
+-      XLSX.utils.book_append_sheet(wb, wsLogisticsVehicles, "Spese Logistica e Mezzi");
+-
+-      // --- Foglio 5: Spese Personalizzate ---
+-      if (data.customExpenses.length > 0) {
+-          const wsCustomExpenses = XLSX.utils.json_to_sheet(data.customExpenses.map(item => ({
+-              Voce: item.name,
+-              'Importo (€)': item.amount,
+-              'Percentuale (%)': item.percentage.toFixed(2) + '%'
+-          })));
+-          XLSX.utils.book_append_sheet(wb, wsCustomExpenses, "Spese Personalizzate");
+-      }
+-
+-      // --- Foglio 6: Entrate Sponsor ---
+-      const wsSponsorRevenues = XLSX.utils.json_to_sheet(data.sponsorRevenues.map(item => ({
+-          Voce: item.name,
+-          'Importo (€)': item.amount,
+-          'Percentuale (%)': item.percentage.toFixed(2) + '%'
+-      })));
+-      XLSX.utils.book_append_sheet(wb, wsSponsorRevenues, "Entrate Sponsor");
+-
+-      // --- Foglio 7: Entrate Personalizzate ---
+-      if (data.customRevenues.length > 0) {
+-          const wsCustomRevenues = XLSX.utils.json_to_sheet(data.customRevenues.map(item => ({
+-              Voce: item.name,
+-              'Importo (€)': item.amount,
+-              'Percentuale (%)': item.percentage.toFixed(2) + '%'
+-          })));
+-          XLSX.utils.book_append_sheet(wb, wsCustomRevenues, "Entrate Personalizzate");
+-      }
+-
+-      XLSX.writeFile(wb, "simulatore_budget_squadra_dettagliato.xlsx");
+-    }
+-    </script>
+-</body>
+-</html>
++<!DOCTYPE html>
++<html lang="it">
++<head>
++    <meta charset="UTF-8">
++    <meta name="viewport" content="width=device-width, initial-scale=1.0">
++    <title>Simulatore Budget Stagionale | Team Ciclistico</title>
++    <link rel="preconnect" href="https://fonts.googleapis.com">
++    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
++    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
++    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
++    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
++    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
++    <style>
++        :root {
++            color-scheme: light;
++            --bg: #f1f5f9;
++            --surface: #ffffff;
++            --surface-alt: #f8fafc;
++            --primary: #2563eb;
++            --primary-dark: #1d4ed8;
++            --text: #0f172a;
++            --muted: #475569;
++            --border: #e2e8f0;
++            --accent: #f97316;
++        }
++        * { box-sizing: border-box; }
++        body {
++            margin: 0;
++            font-family: 'Inter', system-ui, sans-serif;
++            background: var(--bg);
++            color: var(--text);
++            line-height: 1.5;
++        }
++        header {
++            padding: 32px 24px 16px;
++            text-align: center;
++        }
++        header h1 {
++            margin: 0;
++            font-size: clamp(1.75rem, 2.8vw, 2.5rem);
++            font-weight: 700;
++        }
++        header p {
++            margin: 8px auto 0;
++            max-width: 720px;
++            color: var(--muted);
++        }
++        main {
++            display: grid;
++            grid-template-columns: minmax(280px, 420px) minmax(0, 1fr);
++            gap: 24px;
++            padding: 0 24px 40px;
++            align-items: start;
++        }
++        @media (max-width: 1100px) {
++            main {
++                grid-template-columns: 1fr;
++            }
++        }
++        .card {
++            background: var(--surface);
++            border-radius: 16px;
++            border: 1px solid var(--border);
++            padding: 24px;
++            box-shadow: 0 10px 32px rgba(15, 23, 42, 0.08);
++        }
++        h2 {
++            margin: 0 0 12px;
++            font-size: 1.25rem;
++        }
++        h3 {
++            margin: 24px 0 12px;
++            font-size: 1.05rem;
++            color: var(--muted);
++        }
++        label {
++            display: flex;
++            flex-direction: column;
++            gap: 6px;
++            margin-bottom: 14px;
++            font-weight: 600;
++            font-size: 0.95rem;
++        }
++        input[type="number"], input[type="text"] {
++            border: 1px solid var(--border);
++            border-radius: 10px;
++            padding: 10px 12px;
++            font-size: 0.95rem;
++            transition: border-color 0.2s ease, box-shadow 0.2s ease;
++        }
++        input[type="number"]:focus, input[type="text"]:focus {
++            outline: none;
++            border-color: var(--primary);
++            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
++        }
++        table {
++            width: 100%;
++            border-collapse: collapse;
++            margin-top: 8px;
++        }
++        th, td {
++            padding: 10px 12px;
++            border-bottom: 1px solid var(--border);
++            text-align: left;
++            font-size: 0.9rem;
++        }
++        th {
++            background: var(--surface-alt);
++            font-weight: 600;
++        }
++        tr:last-child td {
++            border-bottom: none;
++        }
++        .table-note {
++            font-size: 0.8rem;
++            color: var(--muted);
++            margin-top: 8px;
++        }
++        .grid-two {
++            display: grid;
++            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
++            gap: 12px 16px;
++        }
++        .button-row {
++            display: flex;
++            flex-wrap: wrap;
++            gap: 12px;
++            margin-top: 18px;
++        }
++        button {
++            border: none;
++            border-radius: 999px;
++            padding: 10px 18px;
++            font-weight: 600;
++            font-size: 0.95rem;
++            cursor: pointer;
++            transition: transform 0.15s ease, box-shadow 0.2s ease;
++        }
++        button.primary {
++            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
++            color: white;
++            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.25);
++        }
++        button.secondary {
++            background: var(--surface-alt);
++            color: var(--muted);
++            border: 1px solid var(--border);
++        }
++        button:hover {
++            transform: translateY(-1px);
++        }
++        .summary-grid {
++            display: grid;
++            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
++            gap: 16px;
++            margin-top: 12px;
++        }
++        .summary-box {
++            border-radius: 12px;
++            padding: 16px;
++            background: var(--surface-alt);
++            border: 1px solid var(--border);
++        }
++        .summary-box h4 {
++            margin: 0;
++            font-size: 0.95rem;
++            color: var(--muted);
++        }
++        .summary-box p {
++            margin: 6px 0 0;
++            font-size: 1.2rem;
++            font-weight: 700;
++        }
++        .comparison {
++            display: grid;
++            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
++            gap: 18px;
++            margin-top: 24px;
++        }
++        .comparison-card {
++            border-radius: 16px;
++            border: 1px solid var(--border);
++            padding: 18px;
++            background: var(--surface-alt);
++        }
++        .comparison-card h3 {
++            margin-top: 0;
++            color: var(--primary);
++        }
++        .delta-positive {
++            color: #0f9d58;
++            font-weight: 600;
++        }
++        .charts {
++            display: grid;
++            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
++            gap: 24px;
++            margin-top: 24px;
++        }
++        canvas {
++            max-width: 100%;
++        }
++        .doc-card {
++            background: transparent;
++            border: none;
++            box-shadow: none;
++            margin: 0 24px 48px;
++        }
++        .doc-card p {
++            color: var(--muted);
++            margin: 0 0 12px;
++        }
++        .doc-card code {
++            background: rgba(15, 23, 42, 0.08);
++            padding: 2px 6px;
++            border-radius: 6px;
++        }
++        .doc-card ol {
++            margin: 0 0 16px 18px;
++        }
++        footer {
++            padding: 12px 24px 24px;
++            color: var(--muted);
++            font-size: 0.85rem;
++            text-align: center;
++        }
++    </style>
++</head>
++<body>
++    <header>
++        <h1>Simulatore Budget Stagionale</h1>
++        <p>Analizza i costi fissi e variabili di una stagione ciclistica, confronta lo scenario base con l'efficienza portata da Eviso e genera report pronti per il management.</p>
++    </header>
++    <main>
++        <section class="card">
++            <h2>Parametri di scenario</h2>
++            <div class="grid-two">
++                <label>Numero di gare
++                    <input type="number" id="input-races" min="0" step="1">
++                </label>
++                <label>Km medi per gara
++                    <input type="number" id="input-km" min="0" step="10">
++                </label>
++                <label>Prezzo carburante (€/L)
++                    <input type="number" id="input-fuel-price" min="0" step="0.01">
++                </label>
++                <label>Consumo medio (L/100km)
++                    <input type="number" id="input-consumption" min="0" step="0.1">
++                </label>
++                <label>Pedaggi (€/km)
++                    <input type="number" id="input-toll" min="0" step="0.01">
++                </label>
++                <label>Contributo sponsor (€ stagione)
++                    <input type="number" id="input-sponsor" min="0" step="100">
++                </label>
++                <label>Efficientamento Eviso (%)
++                    <input type="number" id="input-eviso" min="0" max="100" step="1">
++                </label>
++            </div>
++            <div class="button-row">
++                <button class="primary" id="btn-update">Ricalcola budget</button>
++                <button class="secondary" id="btn-sync-travel">Allinea costo trasferte ai parametri carburante</button>
++            </div>
++            <h3>Costi fissi</h3>
++            <div class="table-wrapper">
++                <table>
++                    <thead>
++                        <tr>
++                            <th>Voce</th>
++                            <th>Categoria</th>
++                            <th>Importo annuo (€)</th>
++                        </tr>
++                    </thead>
++                    <tbody id="fixed-body"></tbody>
++                </table>
++            </div>
++            <h3>Costi variabili</h3>
++            <div class="table-wrapper">
++                <table>
++                    <thead>
++                        <tr>
++                            <th>Voce</th>
++                            <th>Base di calcolo</th>
++                            <th>Importo unitario (€)</th>
++                        </tr>
++                    </thead>
++                    <tbody id="variable-body"></tbody>
++                </table>
++            </div>
++            <p class="table-note">Aggiorna liberamente gli importi per simulare scenari diversi. I costi trasferte possono essere ricalcolati automaticamente dal consumo carburante.</p>
++        </section>
++        <section class="card">
++            <h2>Risultati e confronto</h2>
++            <div class="summary-grid">
++                <div class="summary-box">
++                    <h4>Spesa totale stagione</h4>
++                    <p id="season-cost">–</p>
++                </div>
++                <div class="summary-box">
++                    <h4>Spesa media per gara</h4>
++                    <p id="race-cost">–</p>
++                </div>
++                <div class="summary-box">
++                    <h4>Saldo netto (Entrate - Spese)</h4>
++                    <p id="net-balance">–</p>
++                </div>
++            </div>
++            <div class="comparison">
++                <div class="comparison-card">
++                    <h3>Senza Eviso</h3>
++                    <p><strong>Totale spese:</strong> <span id="base-total">–</span></p>
++                    <p><strong>Saldo netto:</strong> <span id="base-net">–</span></p>
++                </div>
++                <div class="comparison-card">
++                    <h3>Con Eviso</h3>
++                    <p><strong>Totale spese:</strong> <span id="eviso-total">–</span></p>
++                    <p><strong>Saldo netto:</strong> <span id="eviso-net">–</span></p>
++                </div>
++                <div class="comparison-card">
++                    <h3>Beneficio Eviso</h3>
++                    <p><strong>Risparmio costi:</strong> <span id="delta-costs">–</span></p>
++                    <p><strong>Saldo migliorato:</strong> <span id="delta-net">–</span></p>
++                </div>
++            </div>
++            <h3>Dettaglio per categoria</h3>
++            <div class="table-wrapper">
++                <table>
++                    <thead>
++                        <tr>
++                            <th>Voce</th>
++                            <th>Categoria</th>
++                            <th>Costo per gara (€)</th>
++                            <th>Costo stagione (€)</th>
++                        </tr>
++                    </thead>
++                    <tbody id="detail-body"></tbody>
++                    <tfoot>
++                        <tr>
++                            <th colspan="3">Totale spese</th>
++                            <th id="detail-total">–</th>
++                        </tr>
++                    </tfoot>
++                </table>
++            </div>
++            <h3>Dettaglio "Con Eviso"</h3>
++            <div class="table-wrapper">
++                <table>
++                    <thead>
++                        <tr>
++                            <th>Voce</th>
++                            <th>Categoria</th>
++                            <th>Costo per gara (€)</th>
++                            <th>Costo stagione (€)</th>
++                        </tr>
++                    </thead>
++                    <tbody id="detail-body-eviso"></tbody>
++                    <tfoot>
++                        <tr>
++                            <th colspan="3">Totale spese</th>
++                            <th id="detail-total-eviso">–</th>
++                        </tr>
++                    </tfoot>
++                </table>
++            </div>
++            <div class="charts">
++                <div class="card" style="box-shadow:none;border:1px solid var(--border);">
++                    <canvas id="bar-chart" aria-label="Confronto costi per categoria" role="img"></canvas>
++                </div>
++                <div class="card" style="box-shadow:none;border:1px solid var(--border);">
++                    <canvas id="pie-chart" aria-label="Ripartizione costi base" role="img"></canvas>
++                </div>
++            </div>
++            <div class="button-row">
++                <button class="primary" id="btn-export-pdf">Esporta PDF</button>
++                <button class="secondary" id="btn-export-csv">Scarica CSV</button>
++            </div>
++        </section>
++    </main>
++    <section class="card doc-card">
++        <h2>Documentazione rapida</h2>
++        <p>Il listino costi di default è archiviato nel file <code>data/default_costs.json</code>. Le chiavi principali sono <code>fixed_costs</code>, <code>variable_costs</code> e <code>defaults</code> per i parametri di scenario.</p>
++        <ol>
++            <li>Per aggiungere una nuova voce inserisci un oggetto con <code>id</code>, <code>name</code>, <code>amount</code>, <code>type</code>, <code>metric</code> (<em>season</em>, <em>per_race</em> o <em>per_km</em>) e <code>category</code>.</li>
++            <li>Aggiorna i valori di default modificando le proprietà in <code>defaults</code> (es. numero gare o efficienza Eviso). Salva il file e ricarica la pagina per applicare le modifiche.</li>
++            <li>Per scenari personalizzati, modifica gli importi dalla tabella o usa il pulsante “Allinea costo trasferte” per calcolare automaticamente carburante + pedaggi sulla base di prezzo e consumi.</li>
++        </ol>
++        <p>Assunzione Eviso: l'efficientamento indicato riduce le spese di categoria <strong>Trasferte</strong> e <strong>Logistica</strong>. Il risparmio viene mostrato nei grafici e nel riepilogo.</p>
++    </section>
++    <footer>Versione dimostrativa – Genera report e condividi scenari con il tuo team tecnico e commerciale.</footer>
++    <script>
++        const state = {
++            fixedCosts: [],
++            variableCosts: [],
++            defaults: {},
++            charts: {
++                bar: null,
++                pie: null
++            }
++        };
++
++        async function loadCostModel() {
++            const response = await fetch('data/default_costs.json');
++            if (!response.ok) {
++                throw new Error('Impossibile caricare data/default_costs.json');
++            }
++            const json = await response.json();
++            state.fixedCosts = json.fixed_costs.map(item => ({ ...item }));
++            state.variableCosts = json.variable_costs.map(item => ({ ...item }));
++            state.defaults = { ...json.defaults };
++        }
++
++        function populateCostTables() {
++            const fixedBody = document.getElementById('fixed-body');
++            const variableBody = document.getElementById('variable-body');
++            fixedBody.innerHTML = '';
++            variableBody.innerHTML = '';
++
++            state.fixedCosts.forEach(item => {
++                const tr = document.createElement('tr');
++                tr.innerHTML = `
++                    <td>${item.name}</td>
++                    <td>${formatCategory(item.category)}</td>
++                    <td><input type="number" class="cost-input" data-type="fixed" data-id="${item.id}" min="0" step="50" value="${item.amount}"></td>
++                `;
++                fixedBody.appendChild(tr);
++            });
++
++            state.variableCosts.forEach(item => {
++                const basisLabel = item.metric === 'per_race' ? 'per gara' : item.metric === 'per_km' ? 'per km' : 'stagionale';
++                const step = item.metric === 'per_km' ? 0.01 : 10;
++                const tr = document.createElement('tr');
++                tr.innerHTML = `
++                    <td>${item.name}</td>
++                    <td>${basisLabel}</td>
++                    <td><input type="number" class="cost-input" data-type="variable" data-id="${item.id}" min="0" step="${step}" value="${item.amount}"></td>
++                `;
++                variableBody.appendChild(tr);
++            });
++        }
++
++        function setDefaultInputs() {
++            document.getElementById('input-races').value = state.defaults.races ?? 18;
++            document.getElementById('input-km').value = state.defaults.avgKmPerRace ?? 400;
++            document.getElementById('input-fuel-price').value = state.defaults.fuelPrice ?? 1.8;
++            document.getElementById('input-consumption').value = state.defaults.fuelConsumptionPer100Km ?? 11;
++            document.getElementById('input-toll').value = state.defaults.tollPerKm ?? 0.06;
++            document.getElementById('input-sponsor').value = state.defaults.sponsorContribution ?? 25000;
++            document.getElementById('input-eviso').value = Math.round((state.defaults.evisoSavingPct ?? 0.1) * 100);
++        }
++
++        function attachListeners() {
++            document.querySelectorAll('.cost-input').forEach(input => {
++                input.addEventListener('input', () => {
++                    const type = input.dataset.type;
++                    const id = input.dataset.id;
++                    const value = Number(input.value) || 0;
++                    const targetArray = type === 'fixed' ? state.fixedCosts : state.variableCosts;
++                    const item = targetArray.find(el => el.id === id);
++                    if (item) {
++                        item.amount = value;
++                        recalc();
++                    }
++                });
++            });
++
++            document.getElementById('btn-update').addEventListener('click', event => {
++                event.preventDefault();
++                recalc();
++            });
++
++            ['input-races','input-km','input-fuel-price','input-consumption','input-toll','input-sponsor','input-eviso'].forEach(id => {
++                document.getElementById(id).addEventListener('change', recalc);
++            });
++
++            document.getElementById('btn-sync-travel').addEventListener('click', event => {
++                event.preventDefault();
++                syncTravelCost();
++            });
++
++            document.getElementById('btn-export-pdf').addEventListener('click', exportPDF);
++            document.getElementById('btn-export-csv').addEventListener('click', exportCSV);
++        }
++
++        function getScenarioParams() {
++            const races = Number(document.getElementById('input-races').value) || 0;
++            const avgKmPerRace = Number(document.getElementById('input-km').value) || 0;
++            const fuelPrice = Number(document.getElementById('input-fuel-price').value) || 0;
++            const fuelConsumptionPer100Km = Number(document.getElementById('input-consumption').value) || 0;
++            const tollPerKm = Number(document.getElementById('input-toll').value) || 0;
++            const sponsorContribution = Number(document.getElementById('input-sponsor').value) || 0;
++            const evisoSavingPct = (Number(document.getElementById('input-eviso').value) || 0) / 100;
++            return { races, avgKmPerRace, fuelPrice, fuelConsumptionPer100Km, tollPerKm, sponsorContribution, evisoSavingPct };
++        }
++
++        function syncTravelCost() {
++            const params = getScenarioParams();
++            const litersPerKm = params.fuelConsumptionPer100Km / 100;
++            const fuelCostPerKm = litersPerKm * params.fuelPrice;
++            const travelCost = fuelCostPerKm + params.tollPerKm;
++            const travelItem = state.variableCosts.find(item => item.id === 'travel');
++            if (travelItem) {
++                travelItem.amount = Number(travelCost.toFixed(2));
++                const input = document.querySelector('.cost-input[data-type="variable"][data-id="travel"]');
++                if (input) {
++                    input.value = travelItem.amount;
++                }
++                recalc();
++            }
++        }
++
++        function calculateScenario({ applyEviso }) {
++            const params = getScenarioParams();
++            const totalKm = params.races * params.avgKmPerRace;
++            const items = [];
++
++            const datasets = [...state.fixedCosts, ...state.variableCosts];
++
++            datasets.forEach(item => {
++                const adjustFactor = applyEviso && (item.category === 'trasferte' || item.category === 'logistica') ? (1 - params.evisoSavingPct) : 1;
++                let seasonCost = 0;
++                let perRaceCost = 0;
++
++                if (item.metric === 'season') {
++                    seasonCost = item.amount * adjustFactor;
++                    perRaceCost = params.races > 0 ? seasonCost / params.races : seasonCost;
++                } else if (item.metric === 'per_race') {
++                    perRaceCost = item.amount * adjustFactor;
++                    seasonCost = perRaceCost * params.races;
++                } else if (item.metric === 'per_km') {
++                    const costPerKm = item.amount * adjustFactor;
++                    perRaceCost = costPerKm * params.avgKmPerRace;
++                    seasonCost = costPerKm * totalKm;
++                }
++
++                items.push({
++                    id: item.id,
++                    name: item.name,
++                    category: item.category,
++                    type: item.type,
++                    perRaceCost,
++                    seasonCost
++                });
++            });
++
++            const totalExpenses = items.reduce((sum, item) => sum + item.seasonCost, 0);
++            const perRaceExpenses = params.races > 0 ? totalExpenses / params.races : totalExpenses;
++            const totalRevenues = params.sponsorContribution;
++            const netBalance = totalRevenues - totalExpenses;
++
++            const categories = items.reduce((acc, item) => {
++                acc[item.category] = (acc[item.category] || 0) + item.seasonCost;
++                return acc;
++            }, {});
++
++            return {
++                params,
++                items,
++                categories,
++                totalExpenses,
++                perRaceExpenses,
++                totalRevenues,
++                netBalance
++            };
++        }
++
++        function recalc() {
++            const base = calculateScenario({ applyEviso: false });
++            const eviso = calculateScenario({ applyEviso: true });
++            updateSummary(base, eviso);
++            renderDetailTables(base, eviso);
++            updateCharts(base, eviso);
++        }
++
++        function updateSummary(base, eviso) {
++            document.getElementById('season-cost').textContent = formatCurrency(base.totalExpenses);
++            document.getElementById('race-cost').textContent = formatCurrency(base.perRaceExpenses);
++            document.getElementById('net-balance').textContent = formatCurrency(base.netBalance);
++
++            document.getElementById('base-total').textContent = formatCurrency(base.totalExpenses);
++            document.getElementById('base-net').textContent = formatCurrency(base.netBalance);
++            document.getElementById('eviso-total').textContent = formatCurrency(eviso.totalExpenses);
++            document.getElementById('eviso-net').textContent = formatCurrency(eviso.netBalance);
++
++            const deltaCost = base.totalExpenses - eviso.totalExpenses;
++            const deltaNet = eviso.netBalance - base.netBalance;
++            document.getElementById('delta-costs').textContent = `${formatCurrency(deltaCost)} (${formatPercentage(deltaCost / base.totalExpenses)})`;
++            document.getElementById('delta-net').textContent = formatCurrency(deltaNet);
++        }
++
++        function renderDetailTables(base, eviso) {
++            const detailBody = document.getElementById('detail-body');
++            const detailBodyEviso = document.getElementById('detail-body-eviso');
++            detailBody.innerHTML = '';
++            detailBodyEviso.innerHTML = '';
++
++            base.items.forEach(item => {
++                const tr = document.createElement('tr');
++                tr.innerHTML = `
++                    <td>${item.name}</td>
++                    <td>${formatCategory(item.category)}</td>
++                    <td>${formatCurrency(item.perRaceCost)}</td>
++                    <td>${formatCurrency(item.seasonCost)}</td>
++                `;
++                detailBody.appendChild(tr);
++            });
++
++            eviso.items.forEach(item => {
++                const tr = document.createElement('tr');
++                tr.innerHTML = `
++                    <td>${item.name}</td>
++                    <td>${formatCategory(item.category)}</td>
++                    <td>${formatCurrency(item.perRaceCost)}</td>
++                    <td>${formatCurrency(item.seasonCost)}</td>
++                `;
++                detailBodyEviso.appendChild(tr);
++            });
++
++            document.getElementById('detail-total').textContent = formatCurrency(base.totalExpenses);
++            document.getElementById('detail-total-eviso').textContent = formatCurrency(eviso.totalExpenses);
++        }
++
++        function updateCharts(base, eviso) {
++            const categories = ['iscrizioni', 'trasferte', 'logistica', 'manutenzione'];
++            const labels = categories.map(formatCategory);
++            const baseData = categories.map(cat => base.categories[cat] || 0);
++            const evisoData = categories.map(cat => eviso.categories[cat] || 0);
++
++            if (state.charts.bar) {
++                state.charts.bar.destroy();
++            }
++            if (state.charts.pie) {
++                state.charts.pie.destroy();
++            }
++
++            const barCtx = document.getElementById('bar-chart');
++            state.charts.bar = new Chart(barCtx, {
++                type: 'bar',
++                data: {
++                    labels,
++                    datasets: [
++                        {
++                            label: 'Senza Eviso',
++                            data: baseData,
++                            backgroundColor: 'rgba(37, 99, 235, 0.6)',
++                            borderRadius: 6
++                        },
++                        {
++                            label: 'Con Eviso',
++                            data: evisoData,
++                            backgroundColor: 'rgba(15, 157, 88, 0.6)',
++                            borderRadius: 6
++                        }
++                    ]
++                },
++                options: {
++                    responsive: true,
++                    plugins: {
++                        legend: {
++                            position: 'bottom'
++                        },
++                        tooltip: {
++                            callbacks: {
++                                label: ctx => `${ctx.dataset.label}: ${formatCurrency(ctx.parsed.y)}`
++                            }
++                        }
++                    },
++                    scales: {
++                        y: {
++                            beginAtZero: true,
++                            ticks: {
++                                callback: value => formatCurrency(value)
++                            }
++                        }
++                    }
++                }
++            });
++
++            const pieCtx = document.getElementById('pie-chart');
++            state.charts.pie = new Chart(pieCtx, {
++                type: 'pie',
++                data: {
++                    labels,
++                    datasets: [
++                        {
++                            data: baseData,
++                            backgroundColor: [
++                                'rgba(37, 99, 235, 0.7)',
++                                'rgba(249, 115, 22, 0.7)',
++                                'rgba(99, 102, 241, 0.7)',
++                                'rgba(15, 157, 88, 0.7)'
++                            ],
++                            borderColor: '#ffffff',
++                            borderWidth: 2
++                        }
++                    ]
++                },
++                options: {
++                    responsive: true,
++                    plugins: {
++                        legend: {
++                            position: 'bottom'
++                        },
++                        tooltip: {
++                            callbacks: {
++                                label: ctx => `${ctx.label}: ${formatCurrency(ctx.parsed)} (${formatPercentage(ctx.parsed / base.totalExpenses)})`
++                            }
++                        }
++                    }
++                }
++            });
++        }
++
++        function formatCurrency(value) {
++            if (!isFinite(value)) return '–';
++            return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value);
++        }
++
++        function formatPercentage(value) {
++            if (!isFinite(value)) return '0%';
++            return new Intl.NumberFormat('it-IT', { style: 'percent', maximumFractionDigits: 1 }).format(value);
++        }
++
++        function formatCategory(code) {
++            const map = {
++                iscrizioni: 'Iscrizioni',
++                trasferte: 'Trasferte',
++                logistica: 'Logistica',
++                manutenzione: 'Manutenzione'
++            };
++            return map[code] || code;
++        }
++
++        async function exportPDF() {
++            const container = document.body;
++            const canvas = await html2canvas(container, { scale: 1.5, backgroundColor: '#ffffff' });
++            const imgData = canvas.toDataURL('image/png');
++            const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4');
++            const pdfWidth = pdf.internal.pageSize.getWidth();
++            const pageHeight = pdf.internal.pageSize.getHeight();
++            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
++            let heightLeft = pdfHeight;
++            let position = 0;
++
++            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
++            heightLeft -= pageHeight;
++
++            while (heightLeft > 0) {
++                position = heightLeft - pdfHeight;
++                pdf.addPage();
++                pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
++                heightLeft -= pageHeight;
++            }
++
++            pdf.save('simulatore_budget_team.pdf');
++        }
++
++        function exportCSV() {
++            const base = calculateScenario({ applyEviso: false });
++            const eviso = calculateScenario({ applyEviso: true });
++            const rows = [];
++            rows.push(['Scenario', 'Voce', 'Categoria', 'Costo per gara (€)', 'Costo stagione (€)']);
++            base.items.forEach(item => {
++                rows.push(['Senza Eviso', item.name, formatCategory(item.category), item.perRaceCost.toFixed(2), item.seasonCost.toFixed(2)]);
++            });
++            eviso.items.forEach(item => {
++                rows.push(['Con Eviso', item.name, formatCategory(item.category), item.perRaceCost.toFixed(2), item.seasonCost.toFixed(2)]);
++            });
++            rows.push([]);
++            rows.push(['Scenario', 'Totale spese (€)', 'Totale entrate (€)', 'Saldo netto (€)']);
++            rows.push(['Senza Eviso', base.totalExpenses.toFixed(2), base.totalRevenues.toFixed(2), base.netBalance.toFixed(2)]);
++            rows.push(['Con Eviso', eviso.totalExpenses.toFixed(2), eviso.totalRevenues.toFixed(2), eviso.netBalance.toFixed(2)]);
++
++            const csvContent = rows.map(row => row.join(';')).join('\n');
++            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
++            const link = document.createElement('a');
++            link.href = URL.createObjectURL(blob);
++            link.download = 'simulatore_budget_team.csv';
++            link.click();
++            URL.revokeObjectURL(link.href);
++        }
++
++        document.addEventListener('DOMContentLoaded', async () => {
++            try {
++                await loadCostModel();
++                populateCostTables();
++                setDefaultInputs();
++                attachListeners();
++                recalc();
++            } catch (error) {
++                console.error(error);
++                alert('Errore nel caricamento del modello dati. Controlla la console.');
++            }
++        });
++    </script>
++</body>
++</html>
+ 
+EOF
+)
