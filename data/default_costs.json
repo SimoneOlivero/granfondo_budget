@@ -1,81 +1,38 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a/data/default_costs.json b/data/default_costs.json
-new file mode 100644
-index 0000000000000000000000000000000000000000..f416443b16a39a9b09498ab2c1792d7cbaa37e82
---- /dev/null
-+++ b/data/default_costs.json
-@@ -0,0 +1,71 @@
-+{
-+  "fixed_costs": [
-+    {
-+      "id": "vehicle",
-+      "name": "Mezzo fornito",
-+      "amount": 14500,
-+      "type": "fixed",
-+      "metric": "season",
-+      "category": "logistica"
-+    },
-+    {
-+      "id": "insurance",
-+      "name": "Assicurazione",
-+      "amount": 3200,
-+      "type": "fixed",
-+      "metric": "season",
-+      "category": "logistica"
-+    },
-+    {
-+      "id": "maintenance",
-+      "name": "Manutenzioni programmate",
-+      "amount": 5200,
-+      "type": "fixed",
-+      "metric": "season",
-+      "category": "manutenzione"
-+    }
-+  ],
-+  "variable_costs": [
-+    {
-+      "id": "registrations",
-+      "name": "Iscrizioni gara",
-+      "amount": 850,
-+      "type": "variable",
-+      "metric": "per_race",
-+      "category": "iscrizioni"
-+    },
-+    {
-+      "id": "travel",
-+      "name": "Trasferte carburante e pedaggi",
-+      "amount": 0.58,
-+      "type": "variable",
-+      "metric": "per_km",
-+      "category": "trasferte"
-+    },
-+    {
-+      "id": "lodging",
-+      "name": "Vitto e alloggio",
-+      "amount": 1350,
-+      "type": "variable",
-+      "metric": "per_race",
-+      "category": "logistica"
-+    },
-+    {
-+      "id": "consumables",
-+      "name": "Materiali di consumo",
-+      "amount": 480,
-+      "type": "variable",
-+      "metric": "per_race",
-+      "category": "logistica"
-+    }
-+  ],
-+  "defaults": {
-+    "races": 18,
-+    "avgKmPerRace": 420,
-+    "fuelPrice": 1.82,
-+    "fuelConsumptionPer100Km": 11.5,
-+    "tollPerKm": 0.07,
-+    "sponsorContribution": 28000,
-+    "evisoSavingPct": 0.12
-+  }
-+}
- 
-EOF
-)
+{
+  "fixed_costs": [
+    {"id": "gm_salary",          "name": "General Manager",                      "amount": 50000,  "type": "cost", "metric": "season", "category": "staff"},
+    {"id": "coach_salary",       "name": "Direttore Sportivo",                   "amount": 35000,  "type": "cost", "metric": "season", "category": "staff"},
+    {"id": "mechanics_salary",   "name": "Meccanici",                            "amount": 75000,  "type": "cost", "metric": "season", "category": "staff"},
+    {"id": "masseur_salary",     "name": "Massaggiatori",                        "amount": 75000,  "type": "cost", "metric": "season", "category": "staff"},
+    {"id": "other_staff_salary", "name": "Altro Staff",                          "amount": 80000,  "type": "cost", "metric": "season", "category": "staff"},
+    {"id": "bike_equipment",     "name": "Materiale Tecnico",                    "amount": 40000,  "type": "cost", "metric": "season", "category": "manutenzione"},
+    {"id": "car_leasing",        "name": "Auto (leasing/acquisto)",              "amount": 80000,  "type": "cost", "metric": "season", "category": "logistica"},
+    {"id": "van_leasing",        "name": "Furgoni (leasing/acquisto)",           "amount": 70000,  "type": "cost", "metric": "season", "category": "logistica"},
+    {"id": "bus_leasing",        "name": "Pullman (leasing/acquisto)",           "amount": 300000, "type": "cost", "metric": "season", "category": "logistica"},
+    {"id": "vehicle_outfitting", "name": "Allestimento Mezzi",                   "amount": 50000,  "type": "cost", "metric": "season", "category": "logistica"},
+    {"id": "hq_cost",            "name": "Sede Operativa",                       "amount": 20000,  "type": "cost", "metric": "season", "category": "logistica"},
+    {"id": "insurance",          "name": "Assicurazioni e Licenze",              "amount": 15000,  "type": "cost", "metric": "season", "category": "logistica"},
+    {"id": "marketing",          "name": "Comunicazione e Marketing",            "amount": 10000,  "type": "cost", "metric": "season", "category": "logistica"},
+    {"id": "bank_guarantee",     "name": "Garanzia Bancaria",                    "amount": 30000,  "type": "cost", "metric": "season", "category": "logistica"}
+  ],
+  "variable_costs": [
+    {"id": "race_fees",         "name": "Iscrizione Gara",                      "amount": 200,   "type": "cost", "metric": "per_race", "category": "iscrizioni"},
+    {"id": "travel_days",       "name": "Vitto e Alloggi per Giorno/Atleta",    "amount": 150,   "type": "cost", "metric": "per_race", "category": "trasferte"},
+    {"id": "staff_travel_days", "name": "Costo Giornaliero Trasferta (staff)",  "amount": 220,   "type": "cost", "metric": "per_race", "category": "trasferte"},
+    {"id": "fuel",              "name": "Carburante per Km",                     "amount": 0.25,  "type": "cost", "metric": "per_km",   "category": "trasferte"},
+    {"id": "toll",              "name": "Pedaggi per Km",                        "amount": 0.06,  "type": "cost", "metric": "per_km",   "category": "trasferte"},
+    {"id": "bike_maintenance",  "name": "Manutenzione Biciclette per Gara",      "amount": 3000,  "type": "cost", "metric": "per_race", "category": "manutenzione"}
+  ],
+  "defaults": {
+    "races": 12,
+    "avgKmPerRace": 120,
+    "registrationFee": 200,
+    "travelDaysPerRace": 2,
+    "dailyTravelCost": 220,
+    "fuelPrice": 1.8,
+    "fuelConsumptionPer100Km": 10,
+    "tollPerKm": 0.06,
+    "sponsorContribution": 500000
+  }
+}
+
