@@ -1,666 +1,410 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulatore Budget Stagionale | Team Ciclistico</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
-    <style>
-        :root {
-            color-scheme: light;
-            --bg: #edf2f7;
-            --surface: #ffffff;
-            --surface-alt: #f7fafc;
-            --border: #d8e0eb;
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --text: #0f172a;
-            --text-muted: #475569;
-        }
-        * { box-sizing: border-box; }
-        body {
-            margin: 0;
-            font-family: 'Inter', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.5;
-        }
-        header.hero {
-            padding: 48px 24px 32px;
-            text-align: center;
-            background: linear-gradient(180deg, rgba(37, 99, 235, 0.12), rgba(37, 99, 235, 0));
-        }
-        header.hero h1 {
-            margin: 0;
-            font-weight: 700;
-            font-size: clamp(2rem, 3vw, 2.8rem);
-        }
-        header.hero p {
-            max-width: 720px;
-            margin: 16px auto 0;
-            color: var(--text-muted);
-            font-size: 1rem;
-        }
-        main {
-            max-width: 1240px;
-            margin: 0 auto;
-            padding: 0 24px 64px;
-        }
-        .layout-grid {
-            display: grid;
-            grid-template-columns: 360px 1fr;
-            align-items: start;
-            gap: 32px;
-        }
-        .panel, .card {
-            background: var(--surface);
-            border-radius: 18px;
-            border: 1px solid var(--border);
-            padding: 24px;
-            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
-            overflow: hidden; 
-        }
-        .panel h2, .card h2, .card h3 {
-            margin-top: 0;
-            font-weight: 600;
-        }
-        .panel h2 {
-            font-size: 1.35rem;
-            margin-bottom: 16px;
-        }
-        form .form-grid {
-            display: grid;
-            gap: 16px;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        }
-        label {
-            display: flex;
-            flex-direction: column;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            gap: 6px;
-        }
-        label span {
-            font-weight: 600;
-            color: var(--text);
-        }
-        input[type="number"] {
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 10px 12px;
-            font-size: 0.95rem;
-            transition: border 0.2s ease, box-shadow 0.2s ease;
-        }
-        input[type="number"]:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-        }
-        .button-row {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-        button {
-            border: none;
-            border-radius: 999px;
-            padding: 10px 20px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-        button.primary {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.3);
-        }
-        button.primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-        }
-        button.secondary {
-            background: var(--surface-alt);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-        .insight-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 16px;
-            margin-top: 24px;
-            margin-bottom: 16px; 
-        }
-        .insight-card {
-            background: var(--surface-alt);
-            border-radius: 14px;
-            padding: 16px;
-            border: 1px solid rgba(148, 163, 184, 0.4);
-        }
-        .insight-card h4 {
-            margin: 0 0 6px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-        .insight-card p {
-            margin: 0;
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-        /* Stile specifico per l'annualizzazione */
-        .insight-card.annualized {
-             border-color: var(--primary);
-             background-color: rgba(37, 99, 235, 0.05);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.92rem;
-            table-layout: auto; 
-        }
-        th, td {
-            padding: 10px 12px;
-            border-bottom: 1px solid var(--border);
-            text-align: left;
-            word-wrap: break-word; 
-        }
-        thead th {
-            font-size: 0.82rem;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            color: var(--text-muted);
-        }
-        .table-wrapper {
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow-x: auto; 
-            margin-bottom: 16px;
-        }
-        .summary-grid {
-            display: grid;
-            gap: 16px;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            margin: 12px 0 28px;
-        }
-        .summary-box {
-            padding: 18px;
-            background: var(--surface-alt);
-            border-radius: 14px;
-            border: 1px solid rgba(148, 163, 184, 0.35);
-        }
-        .summary-box h4 {
-            margin: 0 0 8px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .summary-box p {
-            margin: 0;
-            font-size: 1.2rem;
-            font-weight: 700;
-        }
-        .charts-grid {
-            display: grid;
-            gap: 20px;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            margin-top: 24px;
-        }
-        .charts-grid .card {
-            border: 1px solid var(--border);
-            box-shadow: none;
-            border-radius: 14px;
-            padding: 18px;
-            position: relative; 
-        }
-        .charts-grid canvas {
-            max-height: 300px;
-        }
-        footer {
-            text-align: center;
-            padding: 32px 16px 48px;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-        @media (max-width: 1100px) {
-            .layout-grid { grid-template-columns: 1fr; }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulatore Budget Stagionale | Gare dinamiche</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #edf2f7;
+      --surface: #ffffff;
+      --surface-alt: #f7fafc;
+      --border: #d8e0eb;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --text: #0f172a;
+      --text-muted: #475569;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+    header.hero { padding: 48px 24px 32px; text-align: center; background: linear-gradient(180deg, rgba(37, 99, 235, 0.12), rgba(37, 99, 235, 0)); }
+    header.hero h1 { margin: 0; font-weight: 700; font-size: clamp(2rem, 3vw, 2.8rem); }
+    header.hero p { max-width: 820px; margin: 16px auto 0; color: var(--text-muted); }
+    main { max-width: 1280px; margin: 0 auto; padding: 0 24px 64px; }
+    .layout-grid { display: grid; grid-template-columns: 420px 1fr; align-items: start; gap: 32px; }
+    .panel, .card { background: var(--surface); border-radius: 18px; border: 1px solid var(--border); padding: 24px; box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08); overflow: hidden; }
+    .panel h2, .card h2, .card h3 { margin-top: 0; font-weight: 600; }
+    .panel h2 { font-size: 1.25rem; margin-bottom: 16px; }
+    .section-title { display:flex; align-items:center; justify-content:space-between; gap:12px; margin: 4px 0 12px; }
+    .muted { color: var(--text-muted); font-size: .9rem; }
+    label { display:flex; flex-direction:column; gap:6px; font-size:.88rem; color:var(--text-muted); }
+    label span { color: var(--text); font-weight:600; }
+    input[type="number"], input[type="text"] { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: .95rem; width: 100%; }
+    input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+    .row { display:grid; grid-template-columns: repeat(12, 1fr); gap:12px; }
+    .col-6{grid-column: span 6;} .col-4{grid-column: span 4;} .col-3{grid-column: span 3;} .col-12{grid-column: span 12;}
+    .button-row { display:flex; flex-wrap:wrap; gap:10px; }
+    button { border: none; border-radius: 999px; padding: 10px 16px; font-weight: 600; cursor: pointer; }
+    button.primary { background: var(--primary); color: #fff; }
+    button.primary:hover { background: var(--primary-dark); }
+    button.secondary { background: var(--surface-alt); border:1px solid var(--border); }
+    button.ghost { background: transparent; border:1px dashed var(--border); color: var(--text-muted); }
+    .insight-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap:12px; margin: 18px 0 6px; }
+    .insight-card { background: var(--surface-alt); border:1px solid rgba(148,163,184,.4); border-radius: 14px; padding: 12px; }
+    .insight-card h4{ margin:0 0 6px; font-size:.82rem; color:var(--text-muted); }
+    .insight-card p{ margin:0; font-size:1.05rem; font-weight:700; }
+    .annualized{ border-color: var(--primary); background: rgba(37,99,235,.05); }
+    .table-wrapper{ border:1px solid var(--border); border-radius:16px; overflow:auto; }
+    table{ width:100%; border-collapse: collapse; font-size:.92rem; }
+    thead th{ text-align:left; padding:10px 12px; font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); border-bottom:1px solid var(--border); }
+    tbody td{ padding:10px 12px; border-bottom:1px solid var(--border); }
+    tfoot th{ padding:12px; text-align:right; }
+    .summary-grid{ display:grid; gap:16px; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); margin: 4px 0 20px; }
+    .summary-box{ padding:16px; background: var(--surface-alt); border:1px solid rgba(148,163,184,.35); border-radius:14px; }
+    .summary-box h4{ margin:0 0 8px; font-size:.8rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; }
+    .summary-box p{ margin:0; font-size:1.2rem; font-weight:700; }
+    .tag{ display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background: var(--surface-alt); padding:6px 10px; border-radius:999px; font-size:.8rem; }
+    .charts-grid { display:grid; gap:20px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-top: 16px; }
+    .charts-grid .card{ border:1px solid var(--border); border-radius:14px; padding:16px; box-shadow:none; }
+    @media (max-width: 1100px){ .layout-grid{ grid-template-columns:1fr; } }
+  </style>
 </head>
 <body>
-    <header class="hero">
-        <h1>Simulatore di Budget Stagionale</h1>
-        <p>Imposta tutti i costi fissi (inclusa l'annualizzazione automatica del Leasing) e i parametri di attività per calcolare il budget complessivo.</p>
-    </header>
-    <main>
-        <div class="layout-grid">
-            <aside class="panel" aria-labelledby="title-scenario">
-                <h2 id="title-scenario">Parametri di Costo e Attività</h2>
-                <form id="scenario-form">
-                    <div class="form-grid">
-                        <!-- COSTI FISSI ANNUALI -->
-                        <label><span>Costo Veicoli (Leasing + Ass. Mensile) (€)</span><input type="number" id="input-vehicle-cost" min="0" step="100"></label>
-                        <label><span>Costo Abbigliamento/Divise (€)</span><input type="number" id="input-clothing-cost" min="0" step="100"></label>
-                        <label><span>Altri Costi Fissi Annuali (€)</span><input type="number" id="input-admin-cost" min="0" step="100"></label>
-                        
-                        <!-- PARAMETRI DI ATTIVITÀ -->
-                        <label><span>Numero gare</span><input type="number" id="input-races" min="0" step="1"></label>
-                        <label><span>Quota iscrizione media (€)</span><input type="number" id="input-registration" min="0" step="10"></label>
-                        <label><span>Km medi per trasferta gara</span><input type="number" id="input-km" min="0" step="10"></label>
-                        <label><span>Giorni trasferta per gara</span><input type="number" id="input-travel-days" min="0" step="0.5"></label>
-                        <label><span>Costo giornaliero trasferta (€)</span><input type="number" id="input-travel-daily" min="0" step="10"></label>
-                        <label><span>Prezzo carburante (€/L)</span><input type="number" id="input-fuel-price" min="0" step="0.05"></label>
-                        <label><span>Consumo mezzo (L/100km)</span><input type="number" id="input-consumption" min="0" step="0.1"></label>
-                        <label><span>Pedaggio medio (€/km)</span><input type="number" id="input-toll" min="0" step="0.01"></label>
-                        
-                        <!-- COSTI VARIABILI UNITARI MANUALI (Basi di calcolo) -->
-                        <label><span>Manutenzione Bici per gara (€)</span><input type="number" id="input-bike-maint" min="0" step="1"></label>
+  <header class="hero">
+    <h1>Simulatore di Budget Stagionale</h1>
+    <p>Gestisci le <strong>gare</strong> una ad una (titolo, luogo, km, iscrizione, alloggio) e i <strong>costi fissi</strong> (leasing auto e abbigliamento). Calcolo, ripartizione e grafici aggiornati in tempo reale.</p>
+  </header>
 
-                    </div>
-                    <div class="button-row">
-                        <button class="primary" type="submit" id="btn-update">Aggiorna scenario</button>
-                        <button class="secondary" type="button" id="btn-sync-dynamic">Allinea costi dinamici</button>
-                    </div>
-                </form>
-                <div class="insight-grid" aria-label="Riepilogo automatico dei parametri">
-                    <div class="insight-card annualized"><h4>Costo Veicoli Annuale Stimato</h4><p id="insight-annual-vehicle">–</p></div>
-                    <div class="insight-card"><h4>Carburante al km</h4><p id="insight-fuel-km">–</p></div>
-                    <div class="insight-card"><h4>Km totali in stagione</h4><p id="insight-total-km">–</p></div>
-                    <div class="insight-card"><h4>Giornate di trasferta</h4><p id="insight-travel-days">–</p></div>
-                </div>
-                
-                <section style="margin-top: 16px;">
-                    <h3>Nota sui costi variabili</h3>
-                    <p style="font-size: 0.9em; color: var(--text-muted);">Il pulsante **"Allinea costi dinamici"** aggiorna le voci variabili (Iscrizioni, Vitto/Alloggio, Carburante, Pedaggi) in base ai parametri di attività (es. Quota iscrizione media, Km medi).</p>
-                </section>
-
-            </aside>
-            <section class="card" aria-labelledby="title-results">
-                <h2 id="title-results">Risultati di budget</h2>
-                <div class="summary-grid">
-                    <div class="summary-box"><h4>Budget stagionale</h4><p id="season-total">–</p></div>
-                    <div class="summary-box"><h4>Spesa media per gara</h4><p id="race-cost">–</p></div>
-                    <div class="summary-box"><h4>Costi Totali</h4><p id="net-balance">–</p></div>
-                    <div class="summary-box"><h4>Km totali stagione</h4><p id="total-km">–</p></div>
-                    <div class="summary-box"><h4>Giornate in trasferta</h4><p id="total-travel-days">–</p></div>
-                </div>
-                <h3>Dettaglio costi stagionali</h3>
-                <div class="table-wrapper">
-                    <table>
-                        <thead><tr><th>Voce</th><th>Categoria</th><th>Costo per gara (€)</th><th>Costo stagione (€)</th></tr></thead>
-                        <tbody id="detail-body"></tbody>
-                        <tfoot><tr><th colspan="3">Totale spese</th><th id="detail-total">–</th></tr></tfoot>
-                    </table>
-                </div>
-                <div class="charts-grid">
-                    <div class="card"><h3>Ripartizione costi</h3><canvas id="pie-chart" aria-label="Ripartizione costi" role="img"></canvas></div>
-                    <div class="card"><h3>Costi per categoria</h3><canvas id="bar-chart" aria-label="Costi per categoria" role="img"></canvas></div>
-                </div>
-            </section>
+  <main>
+    <div class="layout-grid">
+      <!-- SINISTRA: Parametri base + costi fissi + aggiunta gara -->
+      <aside class="panel">
+        <div class="section-title">
+          <h2 style="margin:0">Parametri & Costi</h2>
+          <span class="tag" id="race-count-tag">0 gare</span>
         </div>
-        <section class="card" style="margin-top: 32px;" aria-labelledby="title-docs">
-            <h2 id="title-docs">Come personalizzare il modello</h2>
-            <p>Tutti i parametri e costi di base sono modificabili direttamente nel pannello di sinistra. Il **Costo Veicoli** viene inserito come spesa mensile e annualizzato automaticamente (mostrato nel riepilogo in alto).</p>
+
+        <!-- Costi fissi -->
+        <section aria-labelledby="fixed-title">
+          <div class="section-title">
+            <h3 id="fixed-title" style="margin:0">Costi fissi</h3>
+          </div>
+          <div class="row">
+            <label class="col-6"><span>Leasing/Auto (€/mese)</span><input id="fixed-vehicle-month" type="number" min="0" step="10"></label>
+            <label class="col-6"><span>Abbigliamento (€/anno)</span><input id="fixed-clothing" type="number" min="0" step="50"></label>
+          </div>
+          <div class="insight-grid">
+            <div class="insight-card annualized"><h4>Costo veicoli annuale</h4><p id="insight-annual-vehicle">–</p></div>
+          </div>
         </section>
-    </main>
-    <footer>Versione dimostrativa — tutti i diritti riservati.</footer>
+        <hr style="border:none;border-top:1px solid var(--border); margin:16px 0;">
 
-    <script>
-    const state = { fixedCosts: [], variableCosts: [], defaults: {}, charts: { bar: null, pie: null } };
-    const MONTHS_IN_YEAR = 12; // Costante per l'annualizzazione
+        <!-- Parametri di calcolo dinamico -->
+        <section aria-labelledby="dynamic-title">
+          <div class="section-title">
+            <h3 id="dynamic-title" style="margin:0">Parametri dinamici</h3>
+          </div>
+          <div class="row">
+            <label class="col-4"><span>Prezzo carburante (€/L)</span><input id="fuel-price" type="number" min="0" step="0.01"></label>
+            <label class="col-4"><span>Consumo (L/100km)</span><input id="fuel-cons" type="number" min="0" step="0.1"></label>
+            <label class="col-4"><span>Pedaggi (€/km)</span><input id="toll-per-km" type="number" min="0" step="0.01"></label>
+          </div>
+          <div class="insight-grid">
+            <div class="insight-card"><h4>Carburante al km</h4><p id="insight-fuel-km">–</p></div>
+          </div>
+        </section>
 
-    async function loadCostModel() {
-        // Simuliamo il caricamento del JSON che non richiede Firebase per i costi base
-        const defaultCostsJson = {
-          "defaults": {
-            "races": 30,
-            "avgKmPerRace": 500,
-            "registrationFee": 50,
-            "travelDaysPerRace": 1.5,
-            "dailyTravelCost": 250,
-            "fuelPrice": 1.70,
-            "fuelConsumptionPer100Km": 11.5,
-            "tollPerKm": 0.08,
-            
-            "vehicleCostMonthly": 750, 
-            "clothingCost": 5000,   
-            "adminCost": 2700,      
-            "bikeMaintPerRace": 20  
-          },
-          "fixed_costs": [
-            
-          ],
-          "variable_costs": [
-            { "id": "race_fees", "name": "Quote Iscrizione Gara (Costo unitario)", "amount": 50, "metric": "per_race", "category": "iscrizioni" },
-            { "id": "travel_days", "name": "Vitto/Alloggio Trasferta (Costo medio/gg)", "amount": 375, "metric": "per_race", "category": "trasferte" },
-            { "id": "fuel", "name": "Carburante", "amount": 0.1955, "metric": "per_km", "category": "trasferte" },
-            { "id": "toll", "name": "Pedaggi Autostradali", "amount": 0.08, "metric": "per_km", "category": "trasferte" },
-            { "id": "bike_maint", "name": "Manutenzione Bici/Ricambi", "amount": 20, "metric": "per_race", "category": "manutenzione" }
-          ]
-        };
-        
-        const json = defaultCostsJson; // Uso il JSON hardcoded qui per semplicità e auto-contenimento
-        
-        state.fixedCosts = [];
-        state.variableCosts = json.variable_costs.map(item => ({ ...item }));
-        state.defaults = { ...json.defaults };
+        <hr style="border:none;border-top:1px solid var(--border); margin:16px 0;">
 
-        // 1. Costo Veicoli (Mensile -> Annuale)
-        const monthlyVehicleCost = state.defaults.vehicleCostMonthly ?? 0;
-        state.fixedCosts.push({ 
-            id: 'vehicle_cost', 
-            name: 'Costo Veicoli (Leasing + Ass. Annuale)', 
-            amount: monthlyVehicleCost * MONTHS_IN_YEAR, 
-            metric: 'season', 
-            category: 'logistica' 
-        });
-        
-        // 2. Costo Abbigliamento (Annuale)
-        state.fixedCosts.push({ 
-            id: 'clothing_cost', 
-            name: 'Costo Abbigliamento/Divise', 
-            amount: state.defaults.clothingCost ?? 0, 
-            metric: 'season', 
-            category: 'manutenzione' 
-        });
-        
-        // 3. Altri Costi Fissi (Annuale)
-        state.fixedCosts.push({ 
-            id: 'admin_cost', 
-            name: 'Altri Costi Fissi Annuali', 
-            amount: state.defaults.adminCost ?? 0, 
-            metric: 'season', 
-            category: 'staff'
-        });
-        
-        // 4. Manutenzione Bici (Variabile per gara)
-        if (!state.variableCosts.find(item => item.id === 'bike_maint')) {
-             state.variableCosts.push({ 
-                id: 'bike_maint', 
-                name: 'Manutenzione Bici/Ricambi', 
-                amount: state.defaults.bikeMaintPerRace ?? 0, 
-                metric: 'per_race', 
-                category: 'manutenzione' 
-            });
-        }
-    }
+        <!-- Aggiungi gara -->
+        <section aria-labelledby="race-title">
+          <div class="section-title">
+            <h3 id="race-title" style="margin:0">Gare</h3>
+            <div class="button-row">
+              <button type="button" id="btn-add-race" class="primary" aria-label="Aggiungi gara">+ Aggiungi</button>
+              <button type="button" id="btn-fill-default" class="secondary" title="Carica 20 gare tipo">Autoriempi</button>
+              <button type="button" id="btn-clear-races" class="ghost" title="Rimuovi tutte le gare">Svuota</button>
+            </div>
+          </div>
 
-    function setDefaultInputs() {
-        const d = state.defaults;
-        
-        // Input Fissi Principali (Vehicle cost è MONTHLY)
-        document.getElementById('input-vehicle-cost').value  = d.vehicleCostMonthly ?? 0;
-        document.getElementById('input-clothing-cost').value = d.clothingCost ?? 0;
-        document.getElementById('input-admin-cost').value    = d.adminCost ?? 0;
-        
-        // Input Variabili e Parametri di Attività
-        document.getElementById('input-races').value         = d.races ?? 0;
-        document.getElementById('input-km').value            = d.avgKmPerRace ?? 0;
-        document.getElementById('input-registration').value  = d.registrationFee ?? 0;
-        document.getElementById('input-travel-days').value   = d.travelDaysPerRace ?? 0;
-        document.getElementById('input-travel-daily').value  = d.dailyTravelCost ?? 0;
-        document.getElementById('input-fuel-price').value    = d.fuelPrice ?? 0;
-        document.getElementById('input-consumption').value   = d.fuelConsumptionPer100Km ?? 0;
-        document.getElementById('input-toll').value          = d.tollPerKm ?? 0;
-        
-        // Input Variabile Manuale
-        document.getElementById('input-bike-maint').value    = d.bikeMaintPerRace ?? 0;
-    }
+          <!-- Form inline di aggiunta -->
+          <div class="row" style="margin-bottom:8px" id="add-form" hidden>
+            <label class="col-6"><span>Titolo</span><input id="race-title-input" type="text" placeholder="Granfondo X"></label>
+            <label class="col-6"><span>Luogo</span><input id="race-place-input" type="text" placeholder="Città, Prov."></label>
+            <label class="col-3"><span>Km viaggio (A/R)</span><input id="race-km-input" type="number" min="0" step="10" placeholder="400"></label>
+            <label class="col-3"><span>Iscrizione (€)</span><input id="race-reg-input" type="number" min="0" step="5" placeholder="60"></label>
+            <label class="col-3"><span>Alloggio (€)</span><input id="race-lodge-input" type="number" min="0" step="10" placeholder="150"></label>
+            <label class="col-3"><span>Giorni trasf.</span><input id="race-days-input" type="number" min="0" step="0.5" placeholder="1"></label>
+            <div class="col-12 button-row">
+              <button type="button" id="btn-save-race" class="primary">Aggiungi gara</button>
+              <button type="button" id="btn-cancel-race" class="secondary">Annulla</button>
+            </div>
+          </div>
 
-    function attachListeners() {
-        // L'evento 'submit' sul form scatena il ricalcolo e aggiorna lo state
-        document.getElementById('scenario-form').addEventListener('submit', e => { e.preventDefault(); recalc(); });
-        
-        // Ascolta tutti gli input principali per aggiornamenti dinamici
-        ['input-vehicle-cost', 'input-clothing-cost', 'input-admin-cost', 'input-races','input-km','input-registration','input-travel-days','input-travel-daily','input-fuel-price','input-consumption','input-toll', 'input-bike-maint'].forEach(id => {
-            document.getElementById(id).addEventListener('input', recalc); // Usiamo 'input' per aggiornamento più rapido
-        });
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Titolo</th><th>Luogo</th><th>Km (A/R)</th><th>Iscrizione</th><th>Alloggio</th><th>Giorni</th><th>Azioni</th>
+                </tr>
+              </thead>
+              <tbody id="race-list"></tbody>
+              <tfoot>
+                <tr><th colspan="3">Totale gare</th><th id="sum-km">–</th><th id="sum-reg">–</th><th id="sum-lodge">–</th><th id="sum-days">–</th><th></th></tr>
+              </tfoot>
+            </table>
+          </div>
+        </section>
+      </aside>
 
-        document.getElementById('btn-sync-dynamic').addEventListener('click', e => {
-            e.preventDefault();
-            const params = getScenarioParams();
-            applyScenarioAdjustments(params);
-            recalc();
-        });
-    }
-    
-    function getScenarioParams() {
-        // INPUT Mensile
-        const monthlyVehicleCost = Number(document.getElementById('input-vehicle-cost').value) || 0;
-        
-        // CALCOLO Annuale
-        const annualVehicleCost = monthlyVehicleCost * MONTHS_IN_YEAR;
-        
-        // Altri Input Fissi
-        const clothingCost       = Number(document.getElementById('input-clothing-cost').value) || 0;
-        const adminCost          = Number(document.getElementById('input-admin-cost').value) || 0;
-        
-        // Aggiorna i costi fissi virtuali nello state con i valori ANNUALI
-        updateFixedCostItem('vehicle_cost', annualVehicleCost);
-        updateFixedCostItem('clothing_cost', clothingCost);
-        updateFixedCostItem('admin_cost', adminCost);
-        
-        // Input Variabili e Parametri di Attività
-        const bikeMaint     = Number(document.getElementById('input-bike-maint').value) || 0;
-        updateVariableCostItem('bike_maint', bikeMaint);
+      <!-- DESTRA: Risultati -->
+      <section class="card">
+        <h2>Risultati di budget</h2>
+        <div class="summary-grid">
+          <div class="summary-box"><h4>Budget stagionale</h4><p id="season-total">–</p></div>
+          <div class="summary-box"><h4>Spesa media per gara</h4><p id="race-cost">–</p></div>
+          <div class="summary-box"><h4>Km totali stagione</h4><p id="total-km">–</p></div>
+          <div class="summary-box"><h4>Giornate in trasferta</h4><p id="total-travel-days">–</p></div>
+        </div>
 
-        const races         = Number(document.getElementById('input-races'         ).value) || 0;
-        const avgKmPerRace  = Number(document.getElementById('input-km'            ).value) || 0;
-        const registrationFee= Number(document.getElementById('input-registration').value) || 0;
-        const travelDaysPR  = Number(document.getElementById('input-travel-days').value) || 0;
-        const dailyTravelCost= Number(document.getElementById('input-travel-daily').value) || 0;
-        const fuelPrice      = Number(document.getElementById('input-fuel-price' ).value) || 0;
-        const fuelCons100    = Number(document.getElementById('input-consumption').value) || 0;
-        const tollPerKm      = Number(document.getElementById('input-toll'        ).value) || 0;
+        <h3>Dettaglio costi</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Voce</th><th>Categoria</th><th>Per gara (€)</th><th>Stagione (€)</th></tr></thead>
+            <tbody id="detail-body"></tbody>
+            <tfoot><tr><th colspan="3">Totale spese</th><th id="detail-total">–</th></tr></tfoot>
+          </table>
+        </div>
 
-        const fuelCostPerKm  = (fuelCons100 / 100) * fuelPrice;
-        const totalKm        = races * avgKmPerRace * 2; 
-        const totalTravel    = races * travelDaysPR;
-        
-        return { 
-            races, avgKmPerRace, registrationFee, travelDaysPerRace: travelDaysPR, dailyTravelCost, 
-            fuelPrice, fuelConsumptionPer100Km: fuelCons100, tollPerKm, 
-            fuelCostPerKm, totalKm, totalTravelDays: totalTravel,
-            vehicleCost: annualVehicleCost, clothingCost, adminCost 
-        };
-    }
+        <div class="charts-grid">
+          <div class="card"><h3>Ripartizione costi</h3><canvas id="pie-chart" aria-label="Ripartizione costi" role="img"></canvas></div>
+          <div class="card"><h3>Costi per categoria</h3><canvas id="bar-chart" aria-label="Costi per categoria" role="img"></canvas></div>
+        </div>
+      </section>
+    </div>
 
-    function updateFixedCostItem(id, value) {
-        const item = state.fixedCosts.find(el => el.id === id);
-        if (item) item.amount = value;
-    }
+    <section class="card" style="margin-top: 32px;">
+      <h2>Note</h2>
+      <p class="muted">Il calcolo del carburante avviene con la formula <em>(Consumo/100)*Prezzo</em> × km; i pedaggi sono <em>€/km × km</em>. I costi fissi includono il leasing annualizzato (12 mesi) e l'abbigliamento annuo.</p>
+    </section>
+  </main>
 
-    function updateVariableCostItem(id, value) {
-        const item = state.variableCosts.find(el => el.id === id);
-        if (item) item.amount = value;
-    }
+  <footer style="text-align:center; padding:32px 16px 48px; color:var(--text-muted); font-size:.85rem;">Versione dimostrativa — tutti i diritti riservati.</footer>
 
-    function updateDynamicInsights(params) {
-        // NUOVO: Mostra l'annualizzazione del costo veicoli
-        document.getElementById('insight-annual-vehicle').textContent = formatCurrency(params.vehicleCost); 
+  <script>
+    const MONTHS = 12;
+    const state = {
+      races: [], // {id, title, place, km, reg, lodge, days}
+      fixed: { vehicleMonth: 550, clothingYear: 0 },
+      params: { fuelPrice: 1.7, fuelCons100: 14, tollPerKm: 0.00 },
+      charts: { pie:null, bar:null }
+    };
 
-        document.getElementById('insight-fuel-km').textContent  = `${formatCurrency(params.fuelCostPerKm)} / km`;
-        document.getElementById('insight-total-km').textContent = `${formatNumber(params.totalKm)} km`;
-        document.getElementById('insight-travel-days').textContent = `${formatNumber(params.totalTravelDays)} gg`;
-    }
-    
-    function applyScenarioAdjustments(params) {
-        // Allinea i costi variabili dinamici
-        updateVariableCostItem('race_fees',  params.registrationFee); 
-        updateVariableCostItem('travel_days', params.travelDaysPerRace * params.dailyTravelCost); 
-        updateVariableCostItem('fuel',         params.fuelCostPerKm); 
-        updateVariableCostItem('toll',         params.tollPerKm); 
-    }
+    // ======= Utils =======
+    const € = (v) => new Intl.NumberFormat('it-IT', { style:'currency', currency:'EUR', maximumFractionDigits:0 }).format(isFinite(v)? v:0);
+    const fmt = (v) => new Intl.NumberFormat('it-IT', { maximumFractionDigits:0 }).format(isFinite(v)? v:0);
 
-    function calculateScenario(params) {
-        const items = [];
-        const datasets = [...state.fixedCosts, ...state.variableCosts];
-        
-        datasets.forEach(item => {
-            let seasonCost = 0, perRaceCost = 0;
-            if (item.metric === 'season') {
-                seasonCost = item.amount;
-                perRaceCost = params.races > 0 ? seasonCost / params.races : seasonCost;
-            } else if (item.metric === 'per_race') {
-                perRaceCost = item.amount;
-                seasonCost  = perRaceCost * params.races;
-            } else if (item.metric === 'per_km') {
-                const costPerKm = item.amount;
-                perRaceCost = costPerKm * params.avgKmPerRace * 2; 
-                seasonCost  = costPerKm * params.totalKm;
-            }
-            items.push({ id: item.id, name: item.name, category: item.category, perRaceCost, seasonCost });
-        });
-        
-        const totalExpenses = items.reduce((sum, item) => sum + item.seasonCost, 0);
-        
-        const categories = items.reduce((acc, item) => {
-            acc[item.category] = (acc[item.category] || 0) + item.seasonCost;
-            return acc;
-        }, {});
-        
-        return { items, totalExpenses, categories, params };
-    }
+    const qs = (s) => document.querySelector(s);
+    const qsa = (s) => [...document.querySelectorAll(s)];
 
-    function updateSummary(result) {
-        document.getElementById('season-total').textContent = formatCurrency(result.totalExpenses);
-        const avgPerRace = result.params.races > 0 ? result.totalExpenses / result.params.races : result.totalExpenses;
-        document.getElementById('race-cost').textContent = formatCurrency(avgPerRace);
-        
-        document.getElementById('net-balance').textContent = formatCurrency(result.totalExpenses); 
-        document.getElementById('net-balance').style.color = 'var(--text)'; 
+    function fuelPerKm(){ return (Number(state.params.fuelCons100)||0)/100 * (Number(state.params.fuelPrice)||0); }
 
-        document.getElementById('total-km').textContent = formatNumber(result.params.totalKm);
-        document.getElementById('total-travel-days').textContent = formatNumber(result.params.totalTravelDays);
-    }
-
-    function renderDetailTable(result) {
-        const detailBody = document.getElementById('detail-body');
-        detailBody.innerHTML = '';
-        
-        result.items.forEach(item => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${item.name}</td>
-                <td>${formatCategory(item.category)}</td>
-                <td>${formatCurrency(item.perRaceCost)}</td>
-                <td>${formatCurrency(item.seasonCost)}</td>
-            `;
-            detailBody.appendChild(tr);
-        });
-        document.getElementById('detail-total').textContent = formatCurrency(result.totalExpenses);
-    }
-
-    function updateCharts(result) {
-        const categories = Object.keys(result.categories);
-        const labels     = categories.map(formatCategory);
-        const values     = categories.map(cat => result.categories[cat]);
-        const palette    = ['#2563eb','#f97316','#14b8a6','#6366f1','#0f9d58','#9333ea','#ef4444'];
-        if (state.charts.bar) state.charts.bar.destroy();
-        if (state.charts.pie) state.charts.pie.destroy();
-        
-        const barCtx = document.getElementById('bar-chart');
-        state.charts.bar = new Chart(barCtx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Costo per categoria',
-                    data: values,
-                    backgroundColor: labels.map((_, idx) => `${palette[idx % palette.length]}CC`),
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: ctx => `${formatCurrency(ctx.parsed.y)}` } }
-                },
-                scales: {
-                    y: { beginAtZero: true, ticks: { callback: value => formatCurrency(value) } }
-                }
-            }
-        });
-
-        const pieCtx = document.getElementById('pie-chart');
-        state.charts.pie = new Chart(pieCtx, {
-            type: 'pie',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: values,
-                    backgroundColor: labels.map((_, idx) => `${palette[idx % palette.length]}CC`),
-                    borderColor: '#ffffff',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'bottom' },
-                    tooltip: {
-                        callbacks: {
-                            label: ctx => `${ctx.label}: ${formatCurrency(ctx.parsed)} (${formatPercentage(result.totalExpenses > 0 ? ctx.parsed / result.totalExpenses : 0)})`
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    function formatCurrency(value) {
-        if (!isFinite(value)) return '–';
-        const absoluteValue = Math.abs(value); 
-        return new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(absoluteValue);
-    }
-    
-    function formatPercentage(value) {
-        if (!isFinite(value)) return '0%';
-        return new Intl.NumberFormat('it-IT', { style: 'percent', maximumFractionDigits: 1 }).format(value);
-    }
-    
-    function formatNumber(value) {
-        if (!isFinite(value)) return '0';
-        return new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 }).format(value);
-    }
-    
-    function formatCategory(code) {
-        const map = {
-            iscrizioni: 'Iscrizioni',
-            trasferte: 'Trasferte',
-            logistica: 'Logistica',
-            manutenzione: 'Manutenzione',
-            staff: 'Amministrativi/Fissi' 
-        };
-        return map[code] || code;
-    }
-    
     function recalc() {
-        const params = getScenarioParams();
-        updateDynamicInsights(params);
-        const result = calculateScenario(params);
-        updateSummary(result);
-        renderDetailTable(result);
-        updateCharts(result);
+      // Fissi
+      const vehicleAnnual = (Number(state.fixed.vehicleMonth)||0) * MONTHS;
+      const clothing = Number(state.fixed.clothingYear)||0;
+      qs('#insight-annual-vehicle').textContent = €(vehicleAnnual);
+      qs('#insight-fuel-km').textContent = €(fuelPerKm()) + ' / km';
+
+      // Variabili da gare
+      const sumKm = state.races.reduce((s,r)=>s + (Number(r.km)||0), 0);
+      const sumReg= state.races.reduce((s,r)=>s + (Number(r.reg)||0), 0);
+      const sumLod= state.races.reduce((s,r)=>s + (Number(r.lodge)||0), 0);
+      const sumDays= state.races.reduce((s,r)=>s + (Number(r.days)||0), 0);
+
+      const fuelCost = fuelPerKm() * sumKm;
+      const tollCost = (Number(state.params.tollPerKm)||0) * sumKm;
+      const variableTotal = sumReg + sumLod + fuelCost + tollCost;
+      const fixedTotal = vehicleAnnual + clothing;
+      const seasonTotal = fixedTotal + variableTotal;
+
+      // Summary
+      qs('#race-count-tag').textContent = state.races.length + ' gare';
+      qs('#season-total').textContent = €(seasonTotal);
+      qs('#race-cost').textContent = €(state.races.length ? seasonTotal/state.races.length : seasonTotal);
+      qs('#total-km').textContent = fmt(sumKm);
+      qs('#total-travel-days').textContent = fmt(sumDays);
+
+      // Tabelle di dettaglio
+      const detail = [
+        {name:'Leasing/Auto (annuo)', cat:'Logistica', perRace: state.races.length? vehicleAnnual/state.races.length: vehicleAnnual, season: vehicleAnnual},
+        {name:'Abbigliamento (annuo)', cat:'Manutenzione', perRace: state.races.length? clothing/state.races.length: clothing, season: clothing},
+        {name:'Iscrizioni', cat:'Iscrizioni', perRace: state.races.length? sumReg/state.races.length: sumReg, season: sumReg},
+        {name:'Alloggio', cat:'Trasferte', perRace: state.races.length? sumLod/state.races.length: sumLod, season: sumLod},
+        {name:'Carburante', cat:'Trasferte', perRace: state.races.length? fuelCost/state.races.length: fuelCost, season: fuelCost},
+        {name:'Pedaggi', cat:'Trasferte', perRace: state.races.length? tollCost/state.races.length: tollCost, season: tollCost},
+      ];
+
+      const body = qs('#detail-body');
+      body.innerHTML = '';
+      detail.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${d.name}</td><td>${d.cat}</td><td>${€(d.perRace)}</td><td>${€(d.season)}</td>`;
+        body.appendChild(tr);
+      });
+      qs('#detail-total').textContent = €(seasonTotal);
+
+      // Sottomaschera totali gare
+      qs('#sum-km').textContent = fmt(sumKm);
+      qs('#sum-reg').textContent = €(sumReg);
+      qs('#sum-lodge').textContent = €(sumLod);
+      qs('#sum-days').textContent = fmt(sumDays);
+
+      // Aggiorna tabella gare
+      renderRaceTable();
+
+      // Grafici
+      updateCharts({
+        categories: {
+          'Logistica': vehicleAnnual,
+          'Manutenzione': clothing,
+          'Iscrizioni': sumReg,
+          'Trasferte (Alloggio)': sumLod,
+          'Trasferte (Carburante)': fuelCost,
+          'Trasferte (Pedaggi)': tollCost,
+        },
+        total: seasonTotal
+      });
     }
-    
-    document.addEventListener('DOMContentLoaded', async () => {
-        try {
-            await loadCostModel();
-            setDefaultInputs();
-            attachListeners();
-            recalc();
-        } catch (error) {
-            console.error(error);
-            alert('Errore nel caricamento del modello dati. Controlla la console.');
-        }
-    });
-    </script>
+
+    function renderRaceTable(){
+      const tbody = qs('#race-list');
+      tbody.innerHTML = '';
+      state.races.forEach((r,idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx+1}</td>
+          <td>${r.title||'-'}</td>
+          <td>${r.place||'-'}</td>
+          <td>${fmt(r.km)}</td>
+          <td>${€(r.reg)}</td>
+          <td>${€(r.lodge)}</td>
+          <td>${fmt(r.days)}</td>
+          <td>
+            <button type="button" class="secondary" data-edit="${r.id}">Modifica</button>
+            <button type="button" class="ghost" data-del="${r.id}">Elimina</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+      // Bind azioni
+      qsa('[data-del]').forEach(b=> b.onclick = () => { state.races = state.races.filter(x=> x.id!==b.dataset.del); recalc(); });
+      qsa('[data-edit]').forEach(b=> b.onclick = () => startEditRace(b.dataset.edit));
+    }
+
+    // ======= Aggiunta/Modifica gara =======
+    let editingId = null;
+    function toggleAddForm(show){ qs('#add-form').hidden = !show; }
+    function clearForm(){ ['#race-title-input','#race-place-input','#race-km-input','#race-reg-input','#race-lodge-input','#race-days-input'].forEach(s=> qs(s).value=''); editingId=null; }
+
+    function startAddRace(){ clearForm(); toggleAddForm(true); qs('#race-title-input').focus(); }
+    function startEditRace(id){
+      const r = state.races.find(x=> x.id===id);
+      if(!r) return;
+      editingId = id;
+      qs('#race-title-input').value = r.title || '';
+      qs('#race-place-input').value = r.place || '';
+      qs('#race-km-input').value = r.km || 0;
+      qs('#race-reg-input').value = r.reg || 0;
+      qs('#race-lodge-input').value = r.lodge || 0;
+      qs('#race-days-input').value = r.days || 0;
+      toggleAddForm(true);
+    }
+
+    function saveRace(){
+      const title = qs('#race-title-input').value.trim() || '';
+      const place = qs('#race-place-input').value.trim() || '';
+      const km = Number(qs('#race-km-input').value)||0;
+      const reg = Number(qs('#race-reg-input').value)||0;
+      const lodge = Number(qs('#race-lodge-input').value)||0;
+      const days = Number(qs('#race-days-input').value)||0;
+      if(editingId){
+        const i = state.races.findIndex(x=> x.id===editingId);
+        if(i>-1){ state.races[i] = { ...state.races[i], title, place, km, reg, lodge, days }; }
+      } else {
+        state.races.push({ id: crypto.randomUUID(), title, place, km, reg, lodge, days });
+      }
+      toggleAddForm(false); clearForm(); recalc();
+    }
+
+    function fillDefaults(){
+      // Crea 20 gare tipo con km=400, iscrizione=60, alloggio=150, giorni=1
+      state.races = Array.from({length:20}).map((_,i)=>({
+        id: crypto.randomUUID(),
+        title: `Gara ${i+1}`,
+        place: 'Località',
+        km: 400,
+        reg: 60,
+        lodge: 150,
+        days: 1
+      }));
+      recalc();
+    }
+
+    function clearRaces(){ state.races = []; recalc(); }
+
+    // ======= Grafici =======
+    function updateCharts({categories, total}){
+      const labels = Object.keys(categories);
+      const values = labels.map(k=> categories[k]);
+      const palette = ['#2563eb','#f97316','#14b8a6','#6366f1','#0f9d58','#9333ea','#ef4444'];
+
+      // Pie
+      if(state.charts.pie) state.charts.pie.destroy();
+      state.charts.pie = new Chart(qs('#pie-chart'), {
+        type: 'pie', data:{ labels, datasets:[{ data: values, backgroundColor: labels.map((_,i)=> palette[i%palette.length]+"CC"), borderColor:'#fff', borderWidth:2 }] },
+        options:{ responsive:true, plugins:{ legend:{ position:'bottom' }, tooltip:{ callbacks:{ label: ctx => `${ctx.label}: ${€(ctx.parsed)} (${percent(ctx.parsed, total)})` } } } }
+      });
+
+      // Bar
+      if(state.charts.bar) state.charts.bar.destroy();
+      state.charts.bar = new Chart(qs('#bar-chart'), {
+        type: 'bar', data:{ labels, datasets:[{ label:'Costo per categoria', data: values, backgroundColor: labels.map((_,i)=> palette[i%palette.length]+"CC"), borderRadius:6 }] },
+        options:{ responsive:true, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: ctx => €(ctx.parsed.y) } } }, scales:{ y:{ beginAtZero:true, ticks:{ callback: v => €(v) } } } }
+      });
+    }
+
+    const percent = (v,t) => new Intl.NumberFormat('it-IT',{style:'percent',maximumFractionDigits:1}).format(t>0? v/t:0);
+
+    // ======= Wiring =======
+    function bind(){
+      // fissi
+      qs('#fixed-vehicle-month').addEventListener('input', e=>{ state.fixed.vehicleMonth = Number(e.target.value)||0; recalc(); });
+      qs('#fixed-clothing').addEventListener('input', e=>{ state.fixed.clothingYear = Number(e.target.value)||0; recalc(); });
+
+      // parametri
+      qs('#fuel-price').addEventListener('input', e=>{ state.params.fuelPrice = Number(e.target.value)||0; recalc(); });
+      qs('#fuel-cons').addEventListener('input', e=>{ state.params.fuelCons100 = Number(e.target.value)||0; recalc(); });
+      qs('#toll-per-km').addEventListener('input', e=>{ state.params.tollPerKm = Number(e.target.value)||0; recalc(); });
+
+      // gare
+      qs('#btn-add-race').addEventListener('click', ()=> startAddRace());
+      qs('#btn-fill-default').addEventListener('click', ()=> fillDefaults());
+      qs('#btn-clear-races').addEventListener('click', ()=> clearRaces());
+      qs('#btn-save-race').addEventListener('click', ()=> saveRace());
+      qs('#btn-cancel-race').addEventListener('click', ()=> { toggleAddForm(false); clearForm(); });
+    }
+
+    function setDefaults(){
+      // Valori richiesti di default
+      state.fixed.vehicleMonth = 550; // € / mese
+      state.fixed.clothingYear = 0;   // puoi modificare
+      state.params.fuelPrice = 1.7;
+      state.params.fuelCons100 = 14;
+      state.params.tollPerKm = 0.00;
+
+      qs('#fixed-vehicle-month').value = state.fixed.vehicleMonth;
+      qs('#fixed-clothing').value = state.fixed.clothingYear;
+      qs('#fuel-price').value = state.params.fuelPrice;
+      qs('#fuel-cons').value = state.params.fuelCons100;
+      qs('#toll-per-km').value = state.params.tollPerKm;
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=>{ setDefaults(); bind(); recalc(); });
+  </script>
 </body>
 </html>
