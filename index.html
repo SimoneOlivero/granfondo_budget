@@ -1,469 +1,519 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simulatore Budget Stagionale | Gare dinamiche</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <style>
-    :root {
-      color-scheme: light; 
-      --bg:#f8fafc; /* Blu più chiaro */
-      --surface:#fff; 
-      --surface-alt:#f1f5f9; /* Sfondo leggermente grigio */
-      --border:#e2e8f0; 
-      --primary:#0f172a; /* Blu Scuro/Nero per contrasto */
-      --primary-accent:#2563eb; /* Blu per CTA */
-      --primary-accent-dark:#1d4ed8;
-      --text:#0f172a; 
-      --text-muted:#64748b; /* Grigio-Blu */
-      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 5px 15px rgba(0,0,0,0.05); /* Ombra morbida */
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
-    header.hero{padding:64px 24px 40px;text-align:center;background:linear-gradient(180deg,rgba(37,99,235,.08),rgba(37,99,235,0))}
-    header.hero h1{margin:0;font-weight:800;font-size:clamp(2.5rem,4vw,3.5rem);line-height:1.1}
-    header.hero p{max-width:820px;margin:16px auto 0;color:var(--text-muted);font-size:1.1rem}
-    main{max-width:1400px;margin:0 auto;padding:0 24px 64px}
-    .layout-grid{display:grid;grid-template-columns:440px 1fr;align-items:start;gap:40px}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulatore Budget Stagionale | Gare dinamiche</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://unpkg.com/jspdf-autotable@3.5.21/dist/jspdf.plugin.autotable.js"></script>
+  <style>
+    :root {
+      color-scheme: light; 
+      --bg:#f8fafc; /* Blu più chiaro */
+      --surface:#fff; 
+      --surface-alt:#f1f5f9; /* Sfondo leggermente grigio */
+      --border:#e2e8f0; 
+      --primary:#0f172a; /* Blu Scuro/Nero per contrasto */
+      --primary-accent:#2563eb; /* Blu per CTA */
+      --primary-accent-dark:#1d4ed8;
+      --text:#0f172a; 
+      --text-muted:#64748b; /* Grigio-Blu */
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 5px 15px rgba(0,0,0,0.05); /* Ombra morbida */
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+    header.hero{padding:64px 24px 40px;text-align:center;background:linear-gradient(180deg,rgba(37,99,235,.08),rgba(37,99,235,0))}
+    header.hero h1{margin:0;font-weight:800;font-size:clamp(2.5rem,4vw,3.5rem);line-height:1.1}
+    header.hero p{max-width:820px;margin:16px auto 0;color:var(--text-muted);font-size:1.1rem}
+    main{max-width:1400px;margin:0 auto;padding:0 24px 64px}
+    .layout-grid{display:grid;grid-template-columns:440px 1fr;align-items:start;gap:40px}
 
-    /* Stile card uniforme e moderno */
-    .panel,.card{
-      background:var(--surface);
-      border-radius:20px;
-      border:1px solid var(--border);
-      padding:28px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-    .panel h2,.card h2,.card h3{font-weight:700;color:var(--primary)}
-    .section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 16px}
-    .muted{color:var(--text-muted);font-size:.9rem}
-    
-    /* Stile Input */
-    label{display:flex;flex-direction:column;gap:6px;font-size:.9rem;color:var(--text-muted)}
-    label span{color:var(--text);font-weight:600}
-    input[type="number"],input[type="text"]{
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:12px 14px;
-      font-size:1rem;
-      width:100%;
-      transition:border-color .15s, box-shadow .15s;
-    }
-    input:focus{outline:none;border-color:var(--primary-accent);box-shadow:0 0 0 4px rgba(37,99,235,.2);}
-    .row{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
-    .col-6{grid-column:span 6}.col-4{grid-column:span 4}.col-3{grid-column:span 3}.col-12{grid-column:span 12}
-    
-    /* Stile Bottoni */
-    .button-row{display:flex;flex-wrap:wrap;gap:12px}
-    button{
-      border:none;
-      border-radius:14px; /* Angoli meno arrotondati, più moderni */
-      padding:12px 20px;
-      font-weight:600;
-      cursor:pointer;
-      transition:transform .15s, background-color .15s, opacity .15s;
-    }
-    button:active{transform:scale(0.98);}
-    button.primary{background:var(--primary-accent);color:#fff;}
-    button.primary:hover{background:var(--primary-accent-dark);}
-    button.secondary{background:var(--surface-alt);border:1px solid var(--border);color:var(--text);}
-    button.secondary:hover{background:var(--border);}
-    button.ghost{background:transparent;border:1px dashed var(--border);color:var(--text-muted);}
-    button.ghost:hover{background:var(--surface-alt);}
+    /* Stile card uniforme e moderno */
+    .panel,.card{
+      background:var(--surface);
+      border-radius:20px;
+      border:1px solid var(--border);
+      padding:28px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .panel h2,.card h2,.card h3{font-weight:700;color:var(--primary)}
+    .section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 16px}
+    .muted{color:var(--text-muted);font-size:.9rem}
+    
+    /* Stile Input */
+    label{display:flex;flex-direction:column;gap:6px;font-size:.9rem;color:var(--text-muted)}
+    label span{color:var(--text);font-weight:600}
+    input[type="number"],input[type="text"]{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px 14px;
+      font-size:1rem;
+      width:100%;
+      transition:border-color .15s, box-shadow .15s;
+    }
+    input:focus{outline:none;border-color:var(--primary-accent);box-shadow:0 0 0 4px rgba(37,99,235,.2);}
+    .row{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .col-6{grid-column:span 6}.col-4{grid-column:span 4}.col-3{grid-column:span 3}.col-12{grid-column:span 12}
+    
+    /* Stile Bottoni */
+    .button-row{display:flex;flex-wrap:wrap;gap:12px}
+    button{
+      border:none;
+      border-radius:14px; /* Angoli meno arrotondati, più moderni */
+      padding:12px 20px;
+      font-weight:600;
+      cursor:pointer;
+      transition:transform .15s, background-color .15s, opacity .15s;
+    }
+    button:active{transform:scale(0.98);}
+    button.primary{background:var(--primary-accent);color:#fff;}
+    button.primary:hover{background:var(--primary-accent-dark);}
+    button.secondary{background:var(--surface-alt);border:1px solid var(--border);color:var(--text);}
+    button.secondary:hover{background:var(--border);}
+    button.ghost{background:transparent;border:1px dashed var(--border);color:var(--text-muted);}
+    button.ghost:hover{background:var(--surface-alt);}
 
-    /* Insight Cards */
-    .insight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:20px 0 8px}
-    .insight-card{
-      background:var(--surface-alt);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:16px;
-    }
-    .insight-card h4{margin:0 0 4px;font-size:.85rem;color:var(--text-muted);font-weight:500;}
-    .insight-card p{margin:0;font-size:1.2rem;font-weight:700;color:var(--primary);}
-    .annualized{border-left:4px solid var(--primary-accent);background:rgba(37,99,235,.05);border-color:var(--primary-accent);}
-    
-    /* Tabelle */
-    .table-wrapper{border:1px solid var(--border);border-radius:18px;overflow-x:auto;}
-    table{width:100%;min-width:700px;border-collapse:separate;border-spacing:0;font-size:.95rem;}
-    thead th{
-      text-align:left;
-      padding:14px;
-      font-size:.8rem;
-      text-transform:uppercase;
-      letter-spacing:.05em;
-      color:var(--text-muted);
-      border-bottom:1px solid var(--border);
-      background:var(--surface-alt);
-    }
-    tbody td{padding:12px 14px;border-bottom:1px solid var(--border);}
-    tbody tr:last-child td{border-bottom:none;}
-    tfoot th{padding:14px;text-align:right;font-weight:700;border-top:2px solid var(--border);}
-    
-    /* Riepilogo Generale */
-    .summary-grid{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin:12px 0 28px}
-    .summary-box{
-      padding:20px;
-      background:var(--surface-alt);
-      border:1px solid var(--border);
-      border-radius:16px;
-      transition: all 0.2s ease;
-    }
-    .summary-box:hover{transform:translateY(-2px); box-shadow: var(--shadow);}
-    .summary-box h4{margin:0 0 10px;font-size:.9rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
-    .summary-box p{margin:0;font-size:1.5rem;font-weight:800;color:var(--primary-accent);}
-    .tag{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--surface-alt);padding:8px 14px;border-radius:12px;font-size:.9rem;font-weight:600;}
-    
-    /* Grafici */
-    .charts-grid{display:grid;gap:24px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:28px}
-    .charts-grid .card{border:1px solid var(--border);border-radius:18px;padding:24px;box-shadow:none;}
+    /* Insight Cards */
+    .insight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:20px 0 8px}
+    .insight-card{
+      background:var(--surface-alt);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px;
+    }
+    .insight-card h4{margin:0 0 4px;font-size:.85rem;color:var(--text-muted);font-weight:500;}
+    .insight-card p{margin:0;font-size:1.2rem;font-weight:700;color:var(--primary);}
+    .annualized{border-left:4px solid var(--primary-accent);background:rgba(37,99,235,.05);border-color:var(--primary-accent);}
+    
+    /* Tabelle */
+    .table-wrapper{border:1px solid var(--border);border-radius:18px;overflow-x:auto;}
+    table{width:100%;min-width:700px;border-collapse:separate;border-spacing:0;font-size:.95rem;}
+    thead th{
+      text-align:left;
+      padding:14px;
+      font-size:.8rem;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      color:var(--text-muted);
+      border-bottom:1px solid var(--border);
+      background:var(--surface-alt);
+    }
+    tbody td{padding:12px 14px;border-bottom:1px solid var(--border);}
+    tbody tr:last-child td{border-bottom:none;}
+    tfoot th{padding:14px;text-align:right;font-weight:700;border-top:2px solid var(--border);}
+    
+    /* Riepilogo Generale */
+    .summary-grid{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin:12px 0 28px}
+    .summary-box{
+      padding:20px;
+      background:var(--surface-alt);
+      border:1px solid var(--border);
+      border-radius:16px;
+      transition: all 0.2s ease;
+    }
+    .summary-box:hover{transform:translateY(-2px); box-shadow: var(--shadow);}
+    .summary-box h4{margin:0 0 10px;font-size:.9rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
+    .summary-box p{margin:0;font-size:1.5rem;font-weight:800;color:var(--primary-accent);}
+    .tag{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--surface-alt);padding:8px 14px;border-radius:12px;font-size:.9rem;font-weight:600;}
+    
+    /* Grafici */
+    .charts-grid{display:grid;gap:24px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:28px}
+    .charts-grid .card{border:1px solid var(--border);border-radius:18px;padding:24px;box-shadow:none;}
 
-    /* Media Queries per responsive design */
-    @media (max-width:1100px){
-      .layout-grid{grid-template-columns:1fr;gap:32px;}
-      main{padding:0 16px 48px;}
-      .panel,.card{padding:20px;}
-      header.hero{padding:40px 16px 32px;}
-      header.hero h1{font-size:2rem;}
-      .row{gap:12px;}
-      .col-3, .col-4, .col-6 {grid-column:span 6;} /* Su mobile, tutti gli input piccoli diventano 50% */
-      .col-12 {grid-column:span 12;}
-    }
-    @media (max-width:600px) {
-      .col-3, .col-4, .col-6 {grid-column:span 12;} /* Su mobile molto piccolo, tutti gli input a tutta larghezza */
-    }
-  </style>
+    /* Media Queries per responsive design */
+    @media (max-width:1100px){
+      .layout-grid{grid-template-columns:1fr;gap:32px;}
+      main{padding:0 16px 48px;}
+      .panel,.card{padding:20px;}
+      header.hero{padding:40px 16px 32px;}
+      header.hero h1{font-size:2rem;}
+      .row{gap:12px;}
+      .col-3, .col-4, .col-6 {grid-column:span 6;} /* Su mobile, tutti gli input piccoli diventano 50% */
+      .col-12 {grid-column:span 12;}
+    }
+    @media (max-width:600px) {
+      .col-3, .col-4, .col-6 {grid-column:span 12;} /* Su mobile molto piccolo, tutti gli input a tutta larghezza */
+    }
+
+    /* Loading spinner per calcolo km */
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top: 2px solid var(--primary-accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 8px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-  <header class="hero">
-    <h1>Simulatore di Budget Stagionale</h1>
-    <p>Gestisci le <strong>gare</strong> una ad una (titolo, luogo, km, iscrizione, alloggio) e i <strong>costi fissi</strong> (leasing auto e abbigliamento). Calcolo, ripartizione e grafici aggiornati in tempo reale.</p>
-  </header>
+  <header class="hero">
+    <h1>Simulatore di Budget Stagionale</h1>
+    <p>Gestisci le <strong>gare</strong> una ad una (titolo, luogo, km, iscrizione, alloggio) e i <strong>costi fissi</strong> (leasing auto e abbigliamento). Calcolo, ripartizione e grafici aggiornati in tempo reale.</p>
+  </header>
 
-  <main>
-    <div class="layout-grid">
-      <!-- SINISTRA: Parametri base + costi fissi + aggiunta gara -->
-      <aside class="panel">
-        <div class="section-title">
-          <h2 style="margin:0">Parametri & Costi</h2>
-          <span class="tag" id="race-count-tag">0 gare</span>
-        </div>
+  <main>
+    <div class="layout-grid">
+      <!-- SINISTRA: Parametri base + costi fissi + aggiunta gara -->
+      <aside class="panel">
+        <div class="section-title">
+          <h2 style="margin:0">Parametri & Costi</h2>
+          <span class="tag" id="race-count-tag">0 gare</span>
+        </div>
 
-        <!-- Costi fissi -->
-        <section aria-labelledby="fixed-title">
-          <div class="section-title"><h3 id="fixed-title" style="margin:0;font-size:1.1rem;font-weight:600;">Costi fissi (Annuali)</h3></div>
-          <div class="row">
-            <label class="col-6"><span>Leasing/Auto (€/mese)</span><input id="fixed-vehicle-month" type="number" min="0" step="10"></label>
-            <label class="col-6"><span>Abbigliamento (€/anno)</span><input id="fixed-clothing" type="number" min="0" step="50"></label>
-          </div>
-          <div class="insight-grid">
-            <div class="insight-card annualized"><h4>Costo veicoli annuale</h4><p id="insight-annual-vehicle">–</p></div>
-          </div>
-        </section>
-        <hr style="border:none;border-top:1px dashed var(--border);margin:24px 0;">
+        <!-- Costi fissi -->
+        <section aria-labelledby="fixed-title">
+          <div class="section-title"><h3 id="fixed-title" style="margin:0;font-size:1.1rem;font-weight:600;">Costi fissi (Annuali)</h3></div>
+          <div class="row">
+            <label class="col-6"><span>Leasing/Auto (€/mese)</span><input id="fixed-vehicle-month" type="number" min="0" step="10"></label>
+            <label class="col-6"><span>Abbigliamento (€/anno)</span><input id="fixed-clothing" type="number" min="0" step="50"></label>
+          </div>
+          <div class="insight-grid">
+            <div class="insight-card annualized"><h4>Costo veicoli annuale</h4><p id="insight-annual-vehicle">–</p></div>
+          </div>
+        </section>
+        <hr style="border:none;border-top:1px dashed var(--border);margin:24px 0;">
 
-        <!-- Parametri dinamici -->
-        <section aria-labelledby="dynamic-title">
-          <div class="section-title"><h3 id="dynamic-title" style="margin:0;font-size:1.1rem;font-weight:600;">Parametri viaggio</h3></div>
-          <div class="row">
-            <label class="col-4"><span>Carburante (€/L)</span><input id="fuel-price" type="number" min="0" step="0.01"></label>
-            <label class="col-4"><span>Consumo (L/100km)</span><input id="fuel-cons" type="number" min="0" step="0.1"></label>
-            <label class="col-4"><span>Pedaggi (€/km)</span><input id="toll-per-km" type="number" min="0" step="0.01"></label>
-          </div>
-          <div class="insight-grid">
-            <div class="insight-card"><h4>Carburante al km</h4><p id="insight-fuel-km">–</p></div>
-          </div>
-        </section>
-        <hr style="border:none;border-top:1px dashed var(--border);margin:24px 0;">
+        <!-- Parametri dinamici -->
+        <section aria-labelledby="dynamic-title">
+          <div class="section-title"><h3 id="dynamic-title" style="margin:0;font-size:1.1rem;font-weight:600;">Parametri viaggio</h3></div>
+          <div class="row">
+            <label class="col-4"><span>Carburante (€/L)</span><input id="fuel-price" type="number" min="0" step="0.01"></label>
+            <label class="col-4"><span>Consumo (L/100km)</span><input id="fuel-cons" type="number" min="0" step="0.1"></label>
+            <label class="col-4"><span>Pedaggi (€/km)</span><input id="toll-per-km" type="number" min="0" step="0.01"></label>
+          </div>
+          <div class="insight-grid">
+            <div class="insight-card"><h4>Carburante al km</h4><p id="insight-fuel-km">–</p></div>
+          </div>
+        </section>
+        <hr style="border:none;border-top:1px dashed var(--border);margin:24px 0;">
 
-        <!-- Gare -->
-        <section aria-labelledby="race-title">
-          <div class="section-title">
-            <h3 id="race-title" style="margin:0;font-size:1.1rem;font-weight:600;">Lista Gare</h3>
-          </div>
+        <!-- Gare -->
+        <section aria-labelledby="race-title">
+          <div class="section-title">
+            <h3 id="race-title" style="margin:0;font-size:1.1rem;font-weight:600;">Lista Gare</h3>
+          </div>
 
-          <div class="button-row" style="margin-bottom:16px;">
-            <button type="button" id="btn-add-race" class="primary" aria-label="Aggiungi gara">+ Aggiungi Gara</button>
-            <button type="button" id="btn-fill-default" class="secondary" title="Carica 20 gare tipo">Autoriempi</button>
-            <button type="button" id="btn-clear-races" class="ghost" title="Rimuovi tutte le gare">Svuota Lista</button>
-          </div>
+          <div class="button-row" style="margin-bottom:16px;">
+            <button type="button" id="btn-add-race" class="primary" aria-label="Aggiungi gara">+ Aggiungi Gara</button>
+            <button type="button" id="btn-fill-default" class="secondary" title="Carica 20 gare tipo">Autoriempi</button>
+            <button type="button" id="btn-clear-races" class="ghost" title="Rimuovi tutte le gare">Svuota Lista</button>
+          </div>
 
-          <!-- Form inline -->
-          <div class="row panel" style="margin-bottom:16px; padding:20px; border: 1px solid var(--primary-accent);" id="add-form" hidden>
+          <!-- Form inline -->
+          <div class="row panel" style="margin-bottom:16px; padding:20px; border: 1px solid var(--primary-accent);" id="add-form" hidden>
                 <div class="col-12" style="margin-bottom: 8px;"><h4 style="margin:0; font-weight:700; color:var(--primary-accent);">Dettagli Gara</h4></div>
-            <label class="col-6"><span>Titolo</span><input id="race-title-input" type="text" placeholder="Granfondo X"></label>
-            <label class="col-6"><span>Luogo</span><input id="race-place-input" type="text" placeholder="Città, Prov."></label>
-            <label class="col-3"><span>Km viaggio (A/R)</span><input id="race-km-input" type="number" min="0" step="10" placeholder="400"></label>
-            <label class="col-3"><span>Iscrizione (€)</span><input id="race-reg-input" type="number" min="0" step="5" placeholder="60"></label>
-            <label class="col-3"><span>Alloggio (€)</span><input id="race-lodge-input" type="number" min="0" step="10" placeholder="150"></label>
-            <label class="col-3"><span>Giorni trasf.</span><input id="race-days-input" type="number" min="0" step="0.5" placeholder="1"></label>
-            <div class="col-12 button-row" style="margin-top:10px;">
-              <button type="button" id="btn-save-race" class="primary">Salva Dati</button>
-              <button type="button" id="btn-cancel-race" class="secondary">Annulla</button>
-            </div>
-          </div>
+            <label class="col-6"><span>Titolo</span><input id="race-title-input" type="text" placeholder="Granfondo X"></label>
+            <label class="col-6"><span>Luogo</span><input id="race-place-input" type="text" placeholder="Città, Prov. (es. Milano, MI)" title="Inserisci una città per calcolare automaticamente i km da Saluzzo"></label>
+            <label class="col-3"><span>Km viaggio (A/R)</span><input id="race-km-input" type="number" min="0" step="10" placeholder="400"></label>
+            <label class="col-3"><span>Iscrizione (€)</span><input id="race-reg-input" type="number" min="0" step="5" placeholder="60"></label>
+            <label class="col-3"><span>Alloggio (€)</span><input id="race-lodge-input" type="number" min="0" step="10" placeholder="150"></label>
+            <label class="col-3"><span>Giorni trasf.</span><input id="race-days-input" type="number" min="0" step="0.5" placeholder="1"></label>
+            <div class="col-12 button-row" style="margin-top:10px;">
+              <button type="button" id="btn-save-race" class="primary">Salva Dati</button>
+              <button type="button" id="btn-cancel-race" class="secondary">Annulla</button>
+            </div>
+          </div>
 
-          <div class="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th><th>Titolo</th><th>Luogo</th><th>Km (A/R)</th><th>Iscrizione</th><th>Alloggio</th><th>Giorni</th><th>Azioni</th>
-                </tr>
-              </thead>
-              <tbody id="race-list"></tbody>
-              <tfoot>
-                <tr><th colspan="3" style="text-align:left;">Totale gare</th><th id="sum-km">–</th><th id="sum-reg">–</th><th id="sum-lodge">–</th><th id="sum-days">–</th><th></th></tr>
-              </tfoot>
-            </table>
-          </div>
-        </section>
-      </aside>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Titolo</th><th>Luogo</th><th>Km (A/R)</th><th>Iscrizione</th><th>Alloggio</th><th>Giorni</th><th>Azioni</th>
+                </tr>
+              </thead>
+              <tbody id="race-list"></tbody>
+              <tfoot>
+                <tr><th colspan="3" style="text-align:left;">Totale gare</th><th id="sum-km">–</th><th id="sum-reg">–</th><th id="sum-lodge">–</th><th id="sum-days">–</th><th></th></tr>
+              </tfoot>
+            </table>
+          </div>
+        </section>
+      </aside>
 
-      <!-- DESTRA: Risultati -->
-      <section class="card">
-        <h2>Riepilogo Budget Stagionale</h2>
-        <div class="button-row" style="margin-bottom:20px;">
-          <button id="btn-export-csv" class="secondary">📄 Esporta CSV</button>
-          <button id="btn-export-pdf" class="primary">🧾 Esporta PDF</button>
-        </div>
-        <div class="summary-grid">
-          <div class="summary-box"><h4>Budget stagionale totale</h4><p id="season-total">–</p></div>
-          <div class="summary-box"><h4>Spesa media per gara</h4><p id="race-cost">–</p></div>
-          <div class="summary-box"><h4>Km totali viaggio</h4><p id="total-km">–</p></div>
-          <div class="summary-box"><h4>Giornate in trasferta</h4><p id="total-travel-days">–</p></div>
-        </div>
-        
-        <h3 style="margin-top:20px;">Dettaglio costi per voce</h3>
-        <div class="table-wrapper">
-          <table>
-            <thead><tr><th>Voce di spesa</th><th>Categoria</th><th>Per gara (Media)</th><th>Stagione (Totale)</th></tr></thead>
-            <tbody id="detail-body"></tbody>
-            <tfoot><tr><th colspan="3" style="text-align:right;">Totale spese</th><th id="detail-total">–</th></tr></tfoot>
-          </table>
-        </div>
-        
-        <div class="charts-grid">
-          <div class="card">
-            <h3 style="margin-top:0;">Ripartizione percentuale</h3>
-            <canvas id="pie-chart" aria-label="Ripartizione costi" role="img"></canvas>
-          </div>
-          <div class="card">
-            <h3 style="margin-top:0;">Costi per categoria</h3>
-            <canvas id="bar-chart" aria-label="Costi per categoria" role="img"></canvas>
-          </div>
-        </div>
-      </section>
-    </div>
+      <!-- DESTRA: Risultati -->
+      <section class="card">
+        <h2>Riepilogo Budget Stagionale</h2>
+        <div class="button-row" style="margin-bottom:20px;">
+          <button id="btn-export-csv" class="secondary">📄 Esporta CSV</button>
+          <button id="btn-export-pdf" class="primary">🧾 Esporta PDF</button>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-box"><h4>Budget stagionale totale</h4><p id="season-total">–</p></div>
+          <div class="summary-box"><h4>Spesa media per gara</h4><p id="race-cost">–</p></div>
+          <div class="summary-box"><h4>Km totali viaggio</h4><p id="total-km">–</p></div>
+          <div class="summary-box"><h4>Giornate in trasferta</h4><p id="total-travel-days">–</p></div>
+        </div>
+        
+        <h3 style="margin-top:20px;">Dettaglio costi per voce</h3>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Voce di spesa</th><th>Categoria</th><th>Per gara (Media)</th><th>Stagione (Totale)</th></tr></thead>
+            <tbody id="detail-body"></tbody>
+            <tfoot><tr><th colspan="3" style="text-align:right;">Totale spese</th><th id="detail-total">–</th></tr></tfoot>
+          </table>
+        </div>
+        
+        <div class="charts-grid">
+          <div class="card">
+            <h3 style="margin-top:0;">Ripartizione percentuale</h3>
+            <canvas id="pie-chart" aria-label="Ripartizione costi" role="img"></canvas>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0;">Costi per categoria</h3>
+            <canvas id="bar-chart" aria-label="Costi per categoria" role="img"></canvas>
+          </div>
+        </div>
+      </section>
+    </div>
 
-    <section class="card" style="margin-top:32px;">
-      <h2>Metodologia di Calcolo</h2>
-      <p class="muted">
-        Il calcolo del carburante è basato sulla formula: 
-        <em>(Consumo per 100 km / 100) &times; Prezzo Carburante &times; Km viaggio totali</em>. 
-        I pedaggi sono calcolati come <em>€/km &times; Km viaggio totali</em>. 
-        I costi fissi (Leasing/Auto e Abbigliamento) sono annualizzati su 12 mesi e vengono ripartiti equamente sulla media di tutte le gare inserite.
-      </p>
-    </section>
-  </main>
+    <section class="card" style="margin-top:32px;">
+      <h2>Metodologia di Calcolo</h2>
+      <p class="muted">
+        Il calcolo del carburante è basato sulla formula: 
+        <em>(Consumo per 100 km / 100) &times; Prezzo Carburante &times; Km viaggio totali</em>. 
+        I pedaggi sono calcolati come <em>€/km &times; Km viaggio totali</em>. 
+        I costi fissi (Leasing/Auto e Abbigliamento) sono annualizzati su 12 mesi e vengono ripartiti equamente sulla media di tutte le gare inserite.
+        <br><strong>Nuova feature:</strong> Inserendo una città nel campo "Luogo", i km A/R da Saluzzo vengono calcolati automaticamente via OpenStreetMap (gratuito, no API key).
+      </p>
+    </section>
+  </main>
 
-  <footer style="text-align:center;padding:32px 16px 48px;color:var(--text-muted);font-size:.85rem;">Versione dimostrativa — Realizzato con ❤️ e codice.</footer>
+  <footer style="text-align:center;padding:32px 16px 48px;color:var(--text-muted);font-size:.85rem;">Versione aggiornata (fix bug + auto-km) — Realizzato con ❤️ e codice.</footer>
 
-  <script>
-    // Variabile per il numero di mesi nell'anno per l'annualizzazione
-    const MONTHS = 12;
+  <script>
+    // Variabile per il numero di mesi nell'anno per l'annualizzazione
+    const MONTHS = 12;
 
-    // Stato globale dell'applicazione
-    const state = {
-      races: [], // {id,title,place,km,reg,lodge,days}
-      fixed: { vehicleMonth: 550, clothingYear: 0 },
-      params: { fuelPrice: 1.7, fuelCons100: 14, tollPerKm: 0.00 },
-      charts: { pie:null, bar:null }
-    };
+    // Stato globale dell'applicazione
+    const state = {
+      races: [], // {id,title,place,km,reg,lodge,days}
+      fixed: { vehicleMonth: 550, clothingYear: 0 },
+      params: { fuelPrice: 1.7, fuelCons100: 14, tollPerKm: 0.00 },
+      charts: { pie:null, bar:null }
+    };
 
-    // ===== Utils
-    const qs = (s)=>document.querySelector(s);
-    const qsa = (s)=>[...document.querySelectorAll(s)];
-    // Formattazione valuta (€) - RINOMINATO PER EVITARE ERRORI DI SINTASSI CON CARATTERI UNICODE
-    const fmtCurrency = (v)=> new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(isFinite(v)?v:0);
-    // Formattazione numeri semplici
-    const fmt = (v)=> new Intl.NumberFormat('it-IT',{maximumFractionDigits:1}).format(isFinite(v)?v:0);
-    // Formattazione percentuale
-    const percent = (v,t)=> new Intl.NumberFormat('it-IT',{style:'percent',maximumFractionDigits:1}).format(t>0? v/t:0);
-    // Genera un ID univoco
-    const generateId = ()=> String(Date.now() + Math.floor(Math.random() * 1000)); 
+    // ===== Utils
+    const qs = (s)=>document.querySelector(s);
+    const qsa = (s)=>[...document.querySelectorAll(s)];
+    // Formattazione valuta (€) - RINOMINATO PER EVITARE ERRORI DI SINTASSI CON CARATTERI UNICODE
+    const fmtCurrency = (v)=> new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(isFinite(v)?v:0);
+    // Formattazione numeri semplici
+    const fmt = (v)=> new Intl.NumberFormat('it-IT',{maximumFractionDigits:1}).format(isFinite(v)?v:0);
+    // Formattazione percentuale
+    const percent = (v,t)=> new Intl.NumberFormat('it-IT',{style:'percent',maximumFractionDigits:1}).format(t>0? v/t:0);
+    // Genera un ID univoco
+    const generateId = ()=> String(Date.now() + Math.floor(Math.random() * 1000)); 
 
-    // Calcola il costo del carburante per chilometro
-    function fuelPerKm(){ return (Number(state.params.fuelCons100)||0)/100 * (Number(state.params.fuelPrice)||0); }
+    // Calcola il costo del carburante per chilometro
+    function fuelPerKm(){ return (Number(state.params.fuelCons100)||0)/100 * (Number(state.params.fuelPrice)||0); }
 
-    // ===== Calcoli principali (il cuore del simulatore)
-    function recalc(){
-      // Fissi (Annualizzati)
-      const vehicleAnnual = (Number(state.fixed.vehicleMonth)||0) * MONTHS;
-      const clothing = Number(state.fixed.clothingYear)||0;
-      qs('#insight-annual-vehicle').textContent = fmtCurrency(vehicleAnnual);
-      qs('#insight-fuel-km').textContent = fmtCurrency(fuelPerKm()) + ' / km';
+    // Funzione per calcolare distanza Haversine tra due punti (lat1, lon1, lat2, lon2)
+    function haversineDistance(lat1, lon1, lat2, lon2) {
+      const R = 6371; // Raggio Terra in km
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c * 2; // *2 per A/R
+    }
 
-      // Totali dalle gare
-      const sumKm = state.races.reduce((s,r)=> s + (Number(r.km)||0), 0);
-      const sumReg= state.races.reduce((s,r)=> s + (Number(r.reg)||0), 0);
-      const sumLod= state.races.reduce((s,r)=> s + (Number(r.lodge)||0), 0);
-      const sumDays= state.races.reduce((s,r)=> s + (Number(r.days)||0), 0);
-      const raceCount = state.races.length;
+    // Funzione per ottenere coord da città usando Nominatim (OpenStreetMap)
+    async function getCoords(city) {
+      if (!city || city.trim().length < 2) return null;
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(city + ', Italy')}&countrycodes=it`);
+        if (!response.ok) throw new Error('API error');
+        const data = await response.json();
+        if (data.length > 0) {
+          return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+        }
+        return null;
+      } catch (e) {
+        console.error('Errore geocode:', e);
+        return null;
+      }
+    }
 
-      // Costi variabili (basati sui km)
-      const fuelCost = fuelPerKm() * sumKm;
-      const tollCost = (Number(state.params.tollPerKm)||0) * sumKm;
-      
-      // Totali finali
-      const variableTotal = sumReg + sumLod + fuelCost + tollCost;
-      const fixedTotal = vehicleAnnual + clothing;
-      const seasonTotal = fixedTotal + variableTotal;
+    // ===== Calcoli principali (il cuore del simulatore)
+    function recalc(){
+      // Fissi (Annualizzati)
+      const vehicleAnnual = (Number(state.fixed.vehicleMonth)||0) * MONTHS;
+      const clothing = Number(state.fixed.clothingYear)||0;
+      qs('#insight-annual-vehicle').textContent = fmtCurrency(vehicleAnnual);
+      qs('#insight-fuel-km').textContent = fmtCurrency(fuelPerKm()) + ' / km';
 
-      // --- Aggiornamento Summary Box ---
-      qs('#race-count-tag').textContent = raceCount + (raceCount === 1 ? ' gara' : ' gare');
-      qs('#season-total').textContent = fmtCurrency(seasonTotal);
-      // Costo medio per gara: (Costi Totali / Numero Gare)
-      qs('#race-cost').textContent = fmtCurrency(raceCount ? seasonTotal/raceCount : seasonTotal);
-      qs('#total-km').textContent = fmt(sumKm);
-      qs('#total-travel-days').textContent = fmt(sumDays);
+      // Totali dalle gare
+      const sumKm = state.races.reduce((s,r)=> s + (Number(r.km)||0), 0);
+      const sumReg= state.races.reduce((s,r)=> s + (Number(r.reg)||0), 0);
+      const sumLod= state.races.reduce((s,r)=> s + (Number(r.lodge)||0), 0);
+      const sumDays= state.races.reduce((s,r)=> s + (Number(r.days)||0), 0);
+      const raceCount = state.races.length;
 
-      // --- Tabella Dettaglio Costi ---
-      const detail = [
-        // Fixed costs (Annual) divided by race count for 'perRace' average
-        {name:'Leasing/Auto (annuo)', cat:'Logistica', perRace: raceCount? vehicleAnnual/raceCount: vehicleAnnual, season: vehicleAnnual},
-        {name:'Abbigliamento (annuo)', cat:'Manutenzione', perRace: raceCount? clothing/raceCount: clothing, season: clothing},
-        // Variable costs (Total sum) divided by race count for 'perRace' average
-        {name:'Iscrizioni', cat:'Iscrizioni', perRace: raceCount? sumReg/raceCount: sumReg, season: sumReg},
-        {name:'Alloggio', cat:'Trasferte', perRace: raceCount? sumLod/raceCount: sumLod, season: sumLod},
-        {name:'Carburante', cat:'Trasferte', perRace: raceCount? fuelCost/raceCount: fuelCost, season: fuelCost},
-        {name:'Pedaggi', cat:'Trasferte', perRace: raceCount? tollCost/raceCount: tollCost, season: tollCost},
-      ];
-      
-      const body = qs('#detail-body');
-      if (body) {
-        body.innerHTML = '';
-        detail.forEach(d=>{
-          // Se il costo stagionale è zero, saltiamo la riga per pulizia
-          if(d.season === 0 && d.name !== 'Leasing/Auto (annuo)') return; 
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td>${d.name}</td><td>${d.cat}</td><td>${fmtCurrency(d.perRace)}</td><td>${fmtCurrency(d.season)}</td>`;
-          body.appendChild(tr);
-        });
-      }
-      qs('#detail-total').textContent = fmtCurrency(seasonTotal);
+      // Costi variabili (basati sui km)
+      const fuelCost = fuelPerKm() * sumKm;
+      const tollCost = (Number(state.params.tollPerKm)||0) * sumKm;
+      
+      // Totali finali
+      const variableTotal = sumReg + sumLod + fuelCost + tollCost;
+      const fixedTotal = vehicleAnnual + clothing;
+      const seasonTotal = fixedTotal + variableTotal;
 
-      // --- Totali in tabella gare ---
-      qs('#sum-km').textContent = fmt(sumKm);
-      qs('#sum-reg').textContent = fmtCurrency(sumReg);
-      qs('#sum-lodge').textContent = fmtCurrency(sumLod);
-      qs('#sum-days').textContent = fmt(sumDays);
+      // --- Aggiornamento Summary Box ---
+      qs('#race-count-tag').textContent = raceCount + (raceCount === 1 ? ' gara' : ' gare');
+      qs('#season-total').textContent = fmtCurrency(seasonTotal);
+      // Costo medio per gara: (Costi Totali / Numero Gare)
+      qs('#race-cost').textContent = fmtCurrency(raceCount ? seasonTotal/raceCount : seasonTotal);
+      qs('#total-km').textContent = fmt(sumKm);
+      qs('#total-travel-days').textContent = fmt(sumDays);
 
-      // Aggiornamento UI
-      renderRaceTable();
+      // --- Tabella Dettaglio Costi ---
+      const detail = [
+        // Fixed costs (Annual) divided by race count for 'perRace' average
+        {name:'Leasing/Auto (annuo)', cat:'Logistica', perRace: raceCount? vehicleAnnual/raceCount: vehicleAnnual, season: vehicleAnnual},
+        {name:'Abbigliamento (annuo)', cat:'Manutenzione', perRace: raceCount? clothing/raceCount: clothing, season: clothing},
+        // Variable costs (Total sum) divided by race count for 'perRace' average
+        {name:'Iscrizioni', cat:'Iscrizioni', perRace: raceCount? sumReg/raceCount: sumReg, season: sumReg},
+        {name:'Alloggio', cat:'Trasferte', perRace: raceCount? sumLod/raceCount: sumLod, season: sumLod},
+        {name:'Carburante', cat:'Trasferte', perRace: raceCount? fuelCost/raceCount: fuelCost, season: fuelCost},
+        {name:'Pedaggi', cat:'Trasferte', perRace: raceCount? tollCost/raceCount: tollCost, season: tollCost},
+      ];
+      
+      const body = qs('#detail-body');
+      if (body) {
+        body.innerHTML = '';
+        detail.forEach(d=>{
+          // Se il costo stagionale è zero, saltiamo la riga per pulizia
+          if(d.season === 0 && d.name !== 'Leasing/Auto (annuo)') return; 
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${d.name}</td><td>${d.cat}</td><td>${fmtCurrency(d.perRace)}</td><td>${fmtCurrency(d.season)}</td>`;
+          body.appendChild(tr);
+        });
+      }
+      qs('#detail-total').textContent = fmtCurrency(seasonTotal);
 
-      // --- Grafici ---
-      // Aggregazione per categoria per il grafico a barre
-      const categories = detail.reduce((acc, d) => {
-        acc[d.cat] = (acc[d.cat] || 0) + d.season;
-        return acc;
-      }, {});
-      
-      updateCharts({ categories, total: seasonTotal });
-    }
+      // --- Totali in tabella gare ---
+      qs('#sum-km').textContent = fmt(sumKm);
+      qs('#sum-reg').textContent = fmtCurrency(sumReg);
+      qs('#sum-lodge').textContent = fmtCurrency(sumLod);
+      qs('#sum-days').textContent = fmt(sumDays);
 
-    function renderRaceTable(){
-      const tbody = qs('#race-list');
-      if (!tbody) return; 
+      // Aggiornamento UI
+      renderRaceTable();
 
-      tbody.innerHTML = '';
-      state.races.forEach((r,idx)=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${idx+1}</td>
-          <td>${r.title||'-'}</td>
-          <td>${r.place||'-'}</td>
-          <td>${fmt(r.km)}</td>
-          <td>${fmtCurrency(r.reg)}</td>
-          <td>${fmtCurrency(r.lodge)}</td>
-          <td>${fmt(r.days)}</td>
-          <td>
-            <button type="button" class="secondary" style="padding: 8px 12px; border-radius: 8px; font-size: 0.85rem;" data-edit="${r.id}">Modifica</button>
-            <button type="button" class="ghost" style="padding: 8px 12px; border-radius: 8px; font-size: 0.85rem;" data-del="${r.id}">X</button>
-          </td>`;
-        tbody.appendChild(tr);
-      });
-      // Bindings per Modifica/Elimina
-      qsa('[data-del]').forEach(b=> b.onclick = ()=>{ state.races = state.races.filter(x=> x.id!==b.dataset.del); recalc(); });
-      qsa('[data-edit]').forEach(b=> b.onclick = ()=> startEditRace(b.dataset.edit));
-    }
+      // --- Grafici ---
+      // Aggregazione per categoria per il grafico a barre
+      const categories = detail.reduce((acc, d) => {
+        acc[d.cat] = (acc[d.cat] || 0) + d.season;
+        return acc;
+      }, {});
+      
+      updateCharts({ categories, total: seasonTotal });
+    }
 
-    // ===== Aggiungi/Modifica gara
-    let editingId = null;
-    function toggleAddForm(show){ 
+    function renderRaceTable(){
+      const tbody = qs('#race-list');
+      if (!tbody) return; 
+
+      tbody.innerHTML = '';
+      state.races.forEach((r,idx)=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${idx+1}</td>
+          <td>${r.title||'-'}</td>
+          <td>${r.place||'-'}</td>
+          <td>${fmt(r.km)}</td>
+          <td>${fmtCurrency(r.reg)}</td>
+          <td>${fmtCurrency(r.lodge)}</td>
+          <td>${fmt(r.days)}</td>
+          <td>
+            <button type="button" class="secondary" style="padding: 8px 12px; border-radius: 8px; font-size: 0.85rem;" data-edit="${r.id}">Modifica</button>
+            <button type="button" class="ghost" style="padding: 8px 12px; border-radius: 8px; font-size: 0.85rem;" data-del="${r.id}">X</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+      // Bindings per Modifica/Elimina
+      qsa('[data-del]').forEach(b=> b.onclick = ()=>{ state.races = state.races.filter(x=> x.id!==b.dataset.del); recalc(); });
+      qsa('[data-edit]').forEach(b=> b.onclick = ()=> startEditRace(b.dataset.edit));
+    }
+
+    // ===== Aggiungi/Modifica gara
+    let editingId = null;
+    function toggleAddForm(show){ 
         const form = qs('#add-form');
         if (form) form.hidden = !show; 
         const btnAdd = qs('#btn-add-race');
         if(btnAdd) btnAdd.disabled = show; // Disabilita il bottone Aggiungi mentre il form è aperto
     }
-    function clearForm(){ 
+    function clearForm(){ 
         ['#race-title-input','#race-place-input','#race-km-input','#race-reg-input','#race-lodge-input','#race-days-input'].forEach(s=> {
             const el = qs(s);
             if (el) el.value='';
         }); 
         editingId=null; 
         if(qs('#btn-save-race')) qs('#btn-save-race').textContent = 'Salva Dati'; // Resetta testo bottone
+        // Rimuovi loading da km input
+        const kmInput = qs('#race-km-input');
+        if (kmInput) {
+          kmInput.nextElementSibling?.remove(); // Rimuove eventuale spinner
+        }
     }
-    function startAddRace(){ clearForm(); toggleAddForm(true); const titleInput = qs('#race-title-input'); if(titleInput) titleInput.focus(); }
-    function startEditRace(id){
-      const r = state.races.find(x=> x.id===id); if(!r) return;
-      editingId = id;
-      // Riempimento form con controlli di sicurezza
-      if(qs('#race-title-input')) qs('#race-title-input').value = r.title||'';
-      if(qs('#race-place-input')) qs('#race-place-input').value = r.place||'';
-      if(qs('#race-km-input')) qs('#race-km-input').value = r.km||0;
-      if(qs('#race-reg-input')) qs('#race-reg-input').value = r.reg||0;
-      if(qs('#race-lodge-input')) qs('#race-lodge-input').value = r.lodge||0;
-      if(qs('#race-days-input')) qs('#race-days-input').value = r.days||0;
-      
-      if(qs('#btn-save-race')) qs('#btn-save-race').textContent = 'Aggiorna Gara';
-      toggleAddForm(true);
-      const titleInput = qs('#race-title-input'); if(titleInput) titleInput.focus();
-    }
-    function saveRace(){
-      // Aggiunto controllo null per tutti gli input prima di accedere a .value
-      const title = (qs('#race-title-input')?.value||'').trim();
-      const place = (qs('#race-place-input')?.value||'').trim();
-      const km = Number(qs('#race-km-input')?.value)||0;
-      const reg = Number(qs('#race-reg-input')?.value)||0;
-      const lodge = Number(qs('#race-lodge-input')?.value)||0;
-      const days = Number(qs('#race-days-input')?.value)||0;
+    function startAddRace(){ clearForm(); toggleAddForm(true); const titleInput = qs('#race-title-input'); if(titleInput) titleInput.focus(); }
+    function startEditRace(id){
+      const r = state.races.find(x=> x.id===id); if(!r) return;
+      editingId = id;
+      // Riempimento form con controlli di sicurezza
+      if(qs('#race-title-input')) qs('#race-title-input').value = r.title||'';
+      if(qs('#race-place-input')) qs('#race-place-input').value = r.place||'';
+      if(qs('#race-km-input')) qs('#race-km-input').value = r.km||0;
+      if(qs('#race-reg-input')) qs('#race-reg-input').value = r.reg||0;
+      if(qs('#race-lodge-input')) qs('#race-lodge-input').value = r.lodge||0;
+      if(qs('#race-days-input')) qs('#race-days-input').value = r.days||0;
+      
+      if(qs('#btn-save-race')) qs('#btn-save-race').textContent = 'Aggiorna Gara';
+      toggleAddForm(true);
+      const titleInput = qs('#race-title-input'); if(titleInput) titleInput.focus();
+    }
+    function saveRace(){
+      // Aggiunto controllo null per tutti gli input prima di accedere a .value
+      const title = (qs('#race-title-input')?.value||'').trim();
+      const place = (qs('#race-place-input')?.value||'').trim();
+      const km = Number(qs('#race-km-input')?.value)||0;
+      const reg = Number(qs('#race-reg-input')?.value)||0;
+      const lodge = Number(qs('#race-lodge-input')?.value)||0;
+      const days = Number(qs('#race-days-input')?.value)||0;
 
-      // Validazione minima
-      if (title.length < 2) {
-        // Sostituisco alert() con un log console (o si potrebbe usare un modal personalizzato)
-        console.error("Per favore, inserisci un titolo valido per la gara.");
-        return;
-      }
+      // Validazione minima
+      if (title.length < 2) {
+        // Sostituisco alert() con un log console (o si potrebbe usare un modal personalizzato)
+        console.error("Per favore, inserisci un titolo valido per la gara.");
+        return;
+      }
 
-      if(editingId){
-        const i = state.races.findIndex(x=> x.id===editingId);
-        if(i>-1) state.races[i] = { ...state.races[i], title, place, km, reg, lodge, days };
-      } else {
-        // Aggiungi nuova gara
-        const id = generateId(); 
-        state.races.push({ id, title, place, km, reg, lodge, days });
-      }
-      toggleAddForm(false); clearForm(); recalc();
-    }
-    
-    function fillDefaults(){
-      state.races = Array.from({length:15}).map((_,i)=>({ 
+      if(editingId){
+        const i = state.races.findIndex(x=> x.id===editingId);
+        if(i>-1) state.races[i] = { ...state.races[i], title, place, km, reg, lodge, days };
+      } else {
+        // Aggiungi nuova gara
+        const id = generateId(); 
+        state.races.push({ id, title, place, km, reg, lodge, days });
+      }
+      toggleAddForm(false); clearForm(); recalc();
+    }
+    
+    function fillDefaults(){
+      state.races = Array.from({length:15}).map((_,i)=>({ 
           id: generateId(), 
           title:`Gara ${i+1} - ${i%3===0 ? 'Campionato' : 'Tappa'}`, 
           place: i%2===0 ? 'Milano, MI' : 'Roma, RM', 
@@ -474,23 +524,60 @@
       }));
       // Chiude form se aperto
       toggleAddForm(false); clearForm();
-      recalc();
-    }
-    function clearRaces(){ state.races = []; recalc(); }
+      recalc();
+    }
+    function clearRaces(){ state.races = []; recalc(); }
 
-    // ===== Grafici
-    const PIE_COLORS = ['#2563eb','#f97316','#14b8a6','#6366f1','#0f9d58','#9333ea','#ef4444'];
-    function updateCharts({categories,total}){
-      const labels = Object.keys(categories).filter(k => categories[k] > 0);
-      const values = labels.map(k=> categories[k]);
-      
-      const pieCtx = qs('#pie-chart');
-      if(state.charts.pie && pieCtx) state.charts.pie.destroy();
+    // ===== Auto-calcolo Km da Saluzzo
+    async function autoCalculateKm() {
+      const placeInput = qs('#race-place-input');
+      const kmInput = qs('#race-km-input');
+      if (!placeInput || !kmInput || !document.getElementById('add-form').hidden) return; // Solo se form aperto
+
+      const city = placeInput.value.trim();
+      if (city.length < 2) return;
+
+      // Mostra loading
+      let spinner = kmInput.nextElementSibling;
+      if (!spinner || !spinner.classList.contains('loading')) {
+        spinner = document.createElement('span');
+        spinner.className = 'loading';
+        kmInput.parentNode.appendChild(spinner);
+      }
+
+      try {
+        // Coord Saluzzo fisse
+        const saluzzo = { lat: 44.6447, lon: 7.3893 };
+        const dest = await getCoords(city);
+        if (dest) {
+          const km = Math.round(haversineDistance(saluzzo.lat, saluzzo.lon, dest.lat, dest.lon));
+          kmInput.value = km;
+          console.log(`Km A/R da Saluzzo a ${city}: ${km}`);
+        } else {
+          console.warn(`Città non trovata: ${city}. Inserisci manualmente i km.`);
+          kmInput.value = ''; // Pulisci se non trovato
+        }
+      } catch (e) {
+        console.error('Errore calcolo km:', e);
+        kmInput.value = '';
+      } finally {
+        if (spinner) spinner.remove();
+      }
+    }
+
+    // ===== Grafici
+    const PIE_COLORS = ['#2563eb','#f97316','#14b8a6','#6366f1','#0f9d58','#9333ea','#ef4444'];
+    function updateCharts({categories,total}){
+      const labels = Object.keys(categories).filter(k => categories[k] > 0);
+      const values = labels.map(k=> categories[k]);
+      
+      const pieCtx = qs('#pie-chart');
+      if(state.charts.pie && pieCtx) state.charts.pie.destroy();
       if(pieCtx){
         state.charts.pie = new Chart(pieCtx, {
-        type:'pie',
-        data:{ labels, datasets:[{ data: values, backgroundColor: labels.map((_,i)=> PIE_COLORS[i%PIE_COLORS.length]+"E0"), borderColor:'#fff', borderWidth:3 }] },
-        options:{ 
+        type:'pie',
+        data:{ labels, datasets:[{ data: values, backgroundColor: labels.map((_,i)=> PIE_COLORS[i%PIE_COLORS.length]+"E0"), borderColor:'#fff', borderWidth:3 }] },
+        options:{ 
             responsive:true, 
             aspectRatio: 1, // Assicura un cerchio
             plugins:{ 
@@ -509,16 +596,16 @@
                 } 
             } 
         }
-      });
+      });
       }
 
-      const barCtx = qs('#bar-chart');
-      if(state.charts.bar && barCtx) state.charts.bar.destroy();
+      const barCtx = qs('#bar-chart');
+      if(state.charts.bar && barCtx) state.charts.bar.destroy();
       if(barCtx) {
         state.charts.bar = new Chart(barCtx, {
-        type:'bar',
-        data:{ labels, datasets:[{ label:'Costo per categoria', data: values, backgroundColor: labels.map((_,i)=> PIE_COLORS[i%PIE_COLORS.length]+"CC"), borderRadius:8 }] },
-        options:{ 
+        type:'bar',
+        data:{ labels, datasets:[{ label:'Costo per categoria', data: values, backgroundColor: labels.map((_,i)=> PIE_COLORS[i%PIE_COLORS.length]+"CC"), borderRadius:8 }] },
+        options:{ 
             responsive:true, 
             aspectRatio: 1, // Alto quanto il grafico a torta
             plugins:{ 
@@ -536,17 +623,17 @@
                 } 
             } 
         }
-      });
+      });
       }
-    }
+    }
 
-    // ===== Esportazioni
-    function exportCSV(){
-      // Intestazione CSV
-      let csv = 'Titolo;Luogo;Km (A/R);Iscrizione (€);Alloggio (€);Giorni Trasferta\n';
-      // Dati gare
-      state.races.forEach(r=>{ csv += `${r.title};${r.place};${r.km};${r.reg};${r.lodge};${r.days}\n`; });
-      // Dati parametri e totali
+    // ===== Esportazioni
+    function exportCSV(){
+      // Intestazione CSV
+      let csv = 'Titolo;Luogo;Km (A/R);Iscrizione (€);Alloggio (€);Giorni Trasferta\n';
+      // Dati gare
+      state.races.forEach(r=>{ csv += `${r.title};${r.place};${r.km};${r.reg};${r.lodge};${r.days}\n`; });
+      // Dati parametri e totali
       csv += '\nCosti Fissi e Parametri\n';
       csv += `Leasing Mensile (€);${state.fixed.vehicleMonth}\n`;
       csv += `Abbigliamento Annuale (€);${state.fixed.clothingYear}\n`;
@@ -556,35 +643,35 @@
       csv += '\nTotali Stagione\n';
       csv += `Totale Spesa Stagione (€);${qs('#season-total')?.textContent.replace('€', '').trim().replace('.', '').replace(',', '.') || '0'}\n`;
 
-      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download='budget_stagionale.csv'; a.click(); URL.revokeObjectURL(url);
-    }
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='budget_stagionale.csv'; a.click(); URL.revokeObjectURL(url);
+    }
 
-    async function exportPDF(){
-      // Verifica che jsPDF sia disponibile
+    async function exportPDF(){
+      // Verifica che jsPDF sia disponibile
       if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
           console.error("Libreria jsPDF non caricata.");
           return;
       }
-      const { jsPDF } = window.jspdf; 
+      const { jsPDF } = window.jspdf; 
       const doc = new jsPDF({unit:'pt',format:'a4'});
-      const W = doc.internal.pageSize.getWidth(); 
+      const W = doc.internal.pageSize.getWidth(); 
       let y = 40; 
       const pad=24; 
       const line=18;
       
-      // Titolo e Riepilogo
-      doc.setFont('Inter', 'bold');
-      doc.setFontSize(22); doc.text('Riepilogo Budget Stagionale', pad, y); y+=line*1.5;
+      // Titolo e Riepilogo
+      doc.setFont('Inter', 'bold');
+      doc.setFontSize(22); doc.text('Riepilogo Budget Stagionale', pad, y); y+=line*1.5;
 
-      doc.setFontSize(12); doc.setFont('Inter', 'normal');
-      doc.text(`Totale stagione: ${qs('#season-total')?.textContent || '-'}`, pad, y); y+=14;
-      doc.text(`Spesa media per gara: ${qs('#race-cost')?.textContent || '-'}`, pad, y); y+=14;
-      doc.text(`Km totali: ${qs('#total-km')?.textContent || '-'} | Giorni trasferta: ${qs('#total-travel-days')?.textContent || '-'}`, pad, y); y+=line*1.5;
+      doc.setFontSize(12); doc.setFont('Inter', 'normal');
+      doc.text(`Totale stagione: ${qs('#season-total')?.textContent || '-'}`, pad, y); y+=14;
+      doc.text(`Spesa media per gara: ${qs('#race-cost')?.textContent || '-'}`, pad, y); y+=14;
+      doc.text(`Km totali: ${qs('#total-km')?.textContent || '-'} | Giorni trasferta: ${qs('#total-travel-days')?.textContent || '-'}`, pad, y); y+=line*1.5;
 
-      // Dettaglio Costi
-      doc.setFontSize(16); doc.setFont('Inter', 'bold'); doc.text('Dettaglio Costi', pad, y); y+=14;
+      // Dettaglio Costi
+      doc.setFontSize(16); doc.setFont('Inter', 'bold'); doc.text('Dettaglio Costi', pad, y); y+=14;
       
       const detailTableData = [];
       qsa('#detail-body tr').forEach(row => {
@@ -607,8 +694,8 @@
       });
       y = doc.autoTable.previous.finalY + line;
 
-      // Dettaglio Gare
-      doc.setFontSize(16); doc.setFont('Inter', 'bold'); doc.text('Lista Gare', pad, y); y+=14;
+      // Dettaglio Gare
+      doc.setFontSize(16); doc.setFont('Inter', 'bold'); doc.text('Lista Gare', pad, y); y+=14;
 
       const raceTableData = [];
       state.races.forEach((r,i) => {
@@ -636,94 +723,103 @@
       });
       y = doc.autoTable.previous.finalY + line;
 
-      // Grafici come immagini (se esistono)
-      try{
-        const pie = document.getElementById('pie-chart');
-        const bar = document.getElementById('bar-chart');
-        if(pie && bar){
+      // Grafici come immagini (se esistono)
+      try{
+        const pie = document.getElementById('pie-chart');
+        const bar = document.getElementById('bar-chart');
+        if(pie && bar){
             // Assicurati che Chart.js abbia finito il rendering (ritardo minimo)
             await new Promise(r => setTimeout(r, 100)); 
             
-            const pieImg = pie.toDataURL('image/png',1.0);
-            const barImg = bar.toDataURL('image/png',1.0);
+            const pieImg = pie.toDataURL('image/png',1.0);
+            const barImg = bar.toDataURL('image/png',1.0);
             
-            doc.addPage(); 
+            doc.addPage(); 
             y=40; 
             doc.setFontSize(16); doc.setFont('Inter', 'bold'); doc.text('Grafici di Ripartizione', pad, y); y+=20;
             
-            const imgW = W - pad*2; 
+            const imgW = W - pad*2; 
             const imgH = imgW * 0.42; // Mantiene l'aspect ratio
             
-            doc.addImage(pieImg,'PNG',pad,y,imgW,imgH); y+=imgH+20;
-            doc.addImage(barImg,'PNG',pad,y,imgW,imgH);
-        }
-      }catch(e){ console.warn("Errore durante l'acquisizione dei grafici per il PDF:", e); }
-      doc.save('budget_stagionale.pdf');
-    }
+            doc.addImage(pieImg,'PNG',pad,y,imgW,imgH); y+=imgH+20;
+            doc.addImage(barImg,'PNG',pad,y,imgW,imgH);
+        }
+      }catch(e){ console.warn("Errore durante l'acquisizione dei grafici per il PDF:", e); }
+      doc.save('budget_stagionale.pdf');
+    }
 
-    // Necessario per jsPDF autoTable
-    // Aggiungi un placeholder per autoTable
-    document.write('<script src="https://unpkg.com/jspdf-autotable@3.5.21/dist/jspdf.plugin.autotable.js"></script>');
+    // ===== Binding eventi e defaults
+    function bind(){
+      // Funzione di utilità per il binding
+      const bindInput = (id, propertyPath, isFixed = false) => {
+          const input = qs(id);
+          if (input) {
+              input.addEventListener('input', e => {
+                  const value = Number(e.target.value) || 0;
+                  if (isFixed) {
+                      state.fixed[propertyPath] = value;
+                  } else { 
+                      state.params[propertyPath] = value;
+                  }
+                  recalc();
+              });
+              // Aggiunge la classe di interazione CSS all'input
+              input.classList.add('interactable-input');
+          }
+      };
 
-    // ===== Binding eventi e defaults
-    function bind(){
-      // Funzione di utilità per il binding
-        const bindInput = (id, propertyPath, isFixed = false) => {
-            const input = qs(id);
-            if (input) {
-                input.addEventListener('input', e => {
-                    const value = Number(e.target.value) || 0;
-                    if (isFixed) {
-                        state.fixed[propertyPath] = value;
-                    } else { 
-                        state.params[propertyPath] = value;
-                    }
-                    recalc();
-                });
-                // Aggiunge la classe di interazione CSS all'input
-                input.classList.add('interactable-input');
-            }
-        };
-
-      // fissi
-      bindInput('#fixed-vehicle-month', 'vehicleMonth', true);
-      bindInput('#fixed-clothing', 'clothingYear', true);
-      // parametri
-      bindInput('#fuel-price', 'fuelPrice');
-      bindInput('#fuel-cons', 'fuelCons100');
-      bindInput('#toll-per-km', 'tollPerKm');
-      
-      // gare
-      if(qs('#btn-add-race')) qs('#btn-add-race').addEventListener('click', startAddRace);
-      if(qs('#btn-fill-default')) qs('#btn-fill-default').addEventListener('click', fillDefaults);
-      if(qs('#btn-clear-races')) qs('#btn-clear-races').addEventListener('click', clearRaces);
-      if(qs('#btn-save-race')) qs('#btn-save-race').addEventListener('click', saveRace);
-      if(qs('#btn-cancel-race')) qs('#btn-cancel-race').addEventListener('click', ()=> { toggleAddForm(false); clearForm(); });
-      // export
-      if(qs('#btn-export-csv')) qs('#btn-export-csv').addEventListener('click', exportCSV);
-      if(qs('#btn-export-pdf')) qs('#btn-export-pdf').addEventListener('click', exportPDF);
-    }
-
-    // Imposta i valori di default iniziali (come se l'utente li avesse già scritti)
-    function setDefaults(){
-      state.fixed.vehicleMonth = 550; 
-      state.fixed.clothingYear = 0;   
-      state.params.fuelPrice = 1.7;
-      state.params.fuelCons100 = 14;
-      state.params.tollPerKm = 0.00; 
+      // fissi
+      bindInput('#fixed-vehicle-month', 'vehicleMonth', true);
+      bindInput('#fixed-clothing', 'clothingYear', true);
+      // parametri
+      bindInput('#fuel-price', 'fuelPrice');
+      bindInput('#fuel-cons', 'fuelCons100');
+      bindInput('#toll-per-km', 'tollPerKm');
       
-      if(qs('#fixed-vehicle-month')) qs('#fixed-vehicle-month').value = state.fixed.vehicleMonth;
-      if(qs('#fixed-clothing')) qs('#fixed-clothing').value = state.fixed.clothingYear;
-      if(qs('#fuel-price')) qs('#fuel-price').value = state.params.fuelPrice;
-      if(qs('#fuel-cons')) qs('#fuel-cons').value = state.params.fuelCons100;
-      if(qs('#toll-per-km')) qs('#toll-per-km').value = state.params.tollPerKm;
-    }
+      // gare
+      const btnAdd = qs('#btn-add-race');
+      if (btnAdd) {
+        btnAdd.addEventListener('click', startAddRace);
+        console.log('Evento click su #btn-add-race registrato'); // Debug per verificare binding
+      } else {
+        console.error('Bottone #btn-add-race non trovato!');
+      }
+      if(qs('#btn-fill-default')) qs('#btn-fill-default').addEventListener('click', fillDefaults);
+      if(qs('#btn-clear-races')) qs('#btn-clear-races').addEventListener('click', clearRaces);
+      if(qs('#btn-save-race')) qs('#btn-save-race').addEventListener('click', saveRace);
+      if(qs('#btn-cancel-race')) qs('#btn-cancel-race').addEventListener('click', ()=> { toggleAddForm(false); clearForm(); });
+      // export
+      if(qs('#btn-export-csv')) qs('#btn-export-csv').addEventListener('click', exportCSV);
+      if(qs('#btn-export-pdf')) qs('#btn-export-pdf').addEventListener('click', exportPDF);
 
-    document.addEventListener('DOMContentLoaded', ()=>{ 
+      // Auto-km: listener su place input, solo quando form è aperto
+      const placeInput = qs('#race-place-input');
+      if (placeInput) {
+        placeInput.addEventListener('blur', autoCalculateKm); // Su blur (perdita focus) per calcolare dopo input
+        placeInput.addEventListener('change', autoCalculateKm); // O su change
+      }
+    }
+
+    // Imposta i valori di default iniziali (come se l'utente li avesse già scritti)
+    function setDefaults(){
+      state.fixed.vehicleMonth = 550; 
+      state.fixed.clothingYear = 0;   
+      state.params.fuelPrice = 1.7;
+      state.params.fuelCons100 = 14;
+      state.params.tollPerKm = 0.00; 
+  
+      if(qs('#fixed-vehicle-month')) qs('#fixed-vehicle-month').value = state.fixed.vehicleMonth;
+      if(qs('#fixed-clothing')) qs('#fixed-clothing').value = state.fixed.clothingYear;
+      if(qs('#fuel-price')) qs('#fuel-price').value = state.params.fuelPrice;
+      if(qs('#fuel-cons')) qs('#fuel-cons').value = state.params.fuelCons100;
+      if(qs('#toll-per-km')) qs('#toll-per-km').value = state.params.tollPerKm;
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=>{ 
         setDefaults(); 
         bind(); 
         recalc(); 
     });
-  </script>
+  </script>
 </body>
 </html>
