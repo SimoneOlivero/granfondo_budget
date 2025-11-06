@@ -90,22 +90,70 @@
     .insight-card p{margin:0;font-size:1.2rem;font-weight:700;color:var(--primary);}
     .annualized{border-left:4px solid var(--primary-accent);background:rgba(37,99,235,.05);border-color:var(--primary-accent);}
     
-    /* Tabelle */
+    /* Tabelle - Miglioramenti responsive per evitare scroll eccessivo */
     .table-wrapper{border:1px solid var(--border);border-radius:18px;overflow-x:auto;}
-    table{width:100%;min-width:700px;border-collapse:separate;border-spacing:0;font-size:.95rem;}
+    table{width:100%;min-width:500px;border-collapse:separate;border-spacing:0;font-size:.95rem;}
     thead th{
       text-align:left;
-      padding:14px;
+      padding:14px 8px; /* Ridotto padding orizzontale */
       font-size:.8rem;
       text-transform:uppercase;
       letter-spacing:.05em;
       color:var(--text-muted);
       border-bottom:1px solid var(--border);
       background:var(--surface-alt);
+      white-space: nowrap; /* Evita wrap del testo nelle header */
     }
-    tbody td{padding:12px 14px;border-bottom:1px solid var(--border);}
+    tbody td{padding:12px 8px;border-bottom:1px solid var(--border);white-space: nowrap;}
     tbody tr:last-child td{border-bottom:none;}
-    tfoot th{padding:14px;text-align:right;font-weight:700;border-top:2px solid var(--border);}
+    tfoot th{padding:14px 8px;text-align:right;font-weight:700;border-top:2px solid var(--border);}
+
+    /* Layout card per gare su mobile (sotto 768px) */
+    @media (max-width: 768px) {
+      .table-wrapper table,
+      .table-wrapper thead,
+      .table-wrapper tbody,
+      .table-wrapper th,
+      .table-wrapper td,
+      .table-wrapper tr {
+        display: block;
+      }
+      .table-wrapper thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+      .table-wrapper tr {
+        border: 1px solid var(--border);
+        margin-bottom: 10px;
+        border-radius: 12px;
+        padding: 12px;
+        background: var(--surface-alt);
+      }
+      .table-wrapper td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        text-align: right;
+        white-space: normal;
+      }
+      .table-wrapper td:before {
+        content: attr(data-label) ": ";
+        position: absolute;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: 600;
+        color: var(--primary);
+      }
+      .table-wrapper tfoot {
+        display: none; /* Nascondi footer su mobile per semplicità, usa summary box */
+      }
+    }
     
     /* Riepilogo Generale */
     .summary-grid{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin:12px 0 28px}
@@ -138,6 +186,7 @@
     }
     @media (max-width:600px) {
       .col-3, .col-4, .col-6 {grid-column:span 12;} /* Su mobile molto piccolo, tutti gli input a tutta larghezza */
+      table { min-width: auto; } /* Rimuovi min-width su mobile per le tabelle */
     }
 
     /* Loading spinner per calcolo km */
@@ -193,6 +242,9 @@
             <label class="col-4"><span>Consumo (L/100km)</span><input id="fuel-cons" type="number" min="0" step="0.1"></label>
             <label class="col-4"><span>Pedaggi (€/km)</span><input id="toll-per-km" type="number" min="0" step="0.01"></label>
           </div>
+          <div class="row">
+            <label class="col-12"><span>Fattore correzione km stradali</span><input id="road-factor" type="number" min="1" step="0.1" value="1.2" title="Moltiplicatore per approssimare distanza stradale (default 1.2 per ovviare alla linea d'aria)"></label>
+          </div>
           <div class="insight-grid">
             <div class="insight-card"><h4>Carburante al km</h4><p id="insight-fuel-km">–</p></div>
           </div>
@@ -215,7 +267,7 @@
           <div class="row panel" style="margin-bottom:16px; padding:20px; border: 1px solid var(--primary-accent);" id="add-form" hidden>
                 <div class="col-12" style="margin-bottom: 8px;"><h4 style="margin:0; font-weight:700; color:var(--primary-accent);">Dettagli Gara</h4></div>
             <label class="col-6"><span>Titolo</span><input id="race-title-input" type="text" placeholder="Granfondo X"></label>
-            <label class="col-6"><span>Luogo</span><input id="race-place-input" type="text" placeholder="Città, Prov. (es. Milano, MI)" title="Inserisci una città per calcolare automaticamente i km da Saluzzo"></label>
+            <label class="col-6"><span>Luogo</span><input id="race-place-input" type="text" placeholder="Città, Prov. (es. Milano, MI)" title="Inserisci una città per calcolare automaticamente i km da Cuneo"></label>
             <label class="col-3"><span>Km viaggio (A/R)</span><input id="race-km-input" type="number" min="0" step="10" placeholder="400"></label>
             <label class="col-3"><span>Iscrizione (€)</span><input id="race-reg-input" type="number" min="0" step="5" placeholder="60"></label>
             <label class="col-3"><span>Alloggio (€)</span><input id="race-lodge-input" type="number" min="0" step="10" placeholder="150"></label>
@@ -230,7 +282,7 @@
             <table>
               <thead>
                 <tr>
-                  <th>#</th><th>Titolo</th><th>Luogo</th><th>Km (A/R)</th><th>Iscrizione</th><th>Alloggio</th><th>Giorni</th><th>Azioni</th>
+                  <th data-label="#">#</th><th data-label="Titolo">Titolo</th><th data-label="Luogo">Luogo</th><th data-label="Km">Km (A/R)</th><th data-label="Iscr.">Iscrizione</th><th data-label="Alloggio">Alloggio</th><th data-label="Giorni">Giorni</th><th data-label="Azioni">Azioni</th>
                 </tr>
               </thead>
               <tbody id="race-list"></tbody>
@@ -285,12 +337,12 @@
         <em>(Consumo per 100 km / 100) &times; Prezzo Carburante &times; Km viaggio totali</em>. 
         I pedaggi sono calcolati come <em>€/km &times; Km viaggio totali</em>. 
         I costi fissi (Leasing/Auto e Abbigliamento) sono annualizzati su 12 mesi e vengono ripartiti equamente sulla media di tutte le gare inserite.
-        <br><strong>Nuova feature:</strong> Inserendo una città nel campo "Luogo", i km A/R da Saluzzo vengono calcolati automaticamente via OpenStreetMap (gratuito, no API key).
+        <br><strong>Auto-km:</strong> Usa distanza in linea d'aria da Cuneo (OpenStreetMap) + fattore correzione (default 1.2) per approssimare km stradali reali.
       </p>
     </section>
   </main>
 
-  <footer style="text-align:center;padding:32px 16px 48px;color:var(--text-muted);font-size:.85rem;">Versione aggiornata (fix bug + auto-km) — Realizzato con ❤️ e codice.</footer>
+  <footer style="text-align:center;padding:32px 16px 48px;color:var(--text-muted);font-size:.85rem;">Versione aggiornata (con fattore correzione km) — Realizzato con ❤️ e codice.</footer>
 
   <script>
     // Variabile per il numero di mesi nell'anno per l'annualizzazione
@@ -300,7 +352,7 @@
     const state = {
       races: [], // {id,title,place,km,reg,lodge,days}
       fixed: { vehicleMonth: 550, clothingYear: 0 },
-      params: { fuelPrice: 1.7, fuelCons100: 14, tollPerKm: 0.00 },
+      params: { fuelPrice: 1.7, fuelCons100: 14, tollPerKm: 0.00, roadFactor: 1.2 },
       charts: { pie:null, bar:null }
     };
 
@@ -326,7 +378,7 @@
       const dLon = (lon2 - lon1) * Math.PI / 180;
       const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return R * c * 2; // *2 per A/R
+      return (R * c * 2) * (Number(state.params.roadFactor) || 1.2); // *2 per A/R + fattore correzione
     }
 
     // Funzione per ottenere coord da città usando Nominatim (OpenStreetMap)
@@ -430,16 +482,16 @@
       state.races.forEach((r,idx)=>{
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${idx+1}</td>
-          <td>${r.title||'-'}</td>
-          <td>${r.place||'-'}</td>
-          <td>${fmt(r.km)}</td>
-          <td>${fmtCurrency(r.reg)}</td>
-          <td>${fmtCurrency(r.lodge)}</td>
-          <td>${fmt(r.days)}</td>
-          <td>
-            <button type="button" class="secondary" style="padding: 8px 12px; border-radius: 8px; font-size: 0.85rem;" data-edit="${r.id}">Modifica</button>
-            <button type="button" class="ghost" style="padding: 8px 12px; border-radius: 8px; font-size: 0.85rem;" data-del="${r.id}">X</button>
+          <td data-label="#">${idx+1}</td>
+          <td data-label="Titolo">${r.title||'-'}</td>
+          <td data-label="Luogo">${r.place||'-'}</td>
+          <td data-label="Km">${fmt(r.km)}</td>
+          <td data-label="Iscr.">${fmtCurrency(r.reg)}</td>
+          <td data-label="Alloggio">${fmtCurrency(r.lodge)}</td>
+          <td data-label="Giorni">${fmt(r.days)}</td>
+          <td data-label="Azioni">
+            <button type="button" class="secondary" style="padding: 6px 10px; border-radius: 8px; font-size: 0.8rem;" data-edit="${r.id}">Mod.</button>
+            <button type="button" class="ghost" style="padding: 6px 10px; border-radius: 8px; font-size: 0.8rem;" data-del="${r.id}">X</button>
           </td>`;
         tbody.appendChild(tr);
       });
@@ -528,11 +580,11 @@
     }
     function clearRaces(){ state.races = []; recalc(); }
 
-    // ===== Auto-calcolo Km da Saluzzo
+    // ===== Auto-calcolo Km da Cuneo
     async function autoCalculateKm() {
       const placeInput = qs('#race-place-input');
       const kmInput = qs('#race-km-input');
-      if (!placeInput || !kmInput || !document.getElementById('add-form').hidden) return; // Solo se form aperto
+      if (!placeInput || !kmInput || document.getElementById('add-form').hidden) return; // Solo se form aperto
 
       const city = placeInput.value.trim();
       if (city.length < 2) return;
@@ -546,13 +598,13 @@
       }
 
       try {
-        // Coord Saluzzo fisse
-        const saluzzo = { lat: 44.6447, lon: 7.3893 };
+        // Coord Cuneo fisse
+        const cuneo = { lat: 44.3904, lon: 7.5473 };
         const dest = await getCoords(city);
         if (dest) {
-          const km = Math.round(haversineDistance(saluzzo.lat, saluzzo.lon, dest.lat, dest.lon));
+          const km = Math.round(haversineDistance(cuneo.lat, cuneo.lon, dest.lat, dest.lon));
           kmInput.value = km;
-          console.log(`Km A/R da Saluzzo a ${city}: ${km}`);
+          console.log(`Km A/R da Cuneo a ${city} (con fattore ${state.params.roadFactor}): ${km}`);
         } else {
           console.warn(`Città non trovata: ${city}. Inserisci manualmente i km.`);
           kmInput.value = ''; // Pulisci se non trovato
@@ -640,6 +692,7 @@
       csv += `Carburante (€/L);${state.params.fuelPrice}\n`;
       csv += `Consumo (L/100km);${state.params.fuelCons100}\n`;
       csv += `Pedaggi (€/km);${state.params.tollPerKm}\n`;
+      csv += `Fattore correzione km;${state.params.roadFactor}\n`;
       csv += '\nTotali Stagione\n';
       csv += `Totale Spesa Stagione (€);${qs('#season-total')?.textContent.replace('€', '').trim().replace('.', '').replace(',', '.') || '0'}\n`;
 
@@ -775,6 +828,7 @@
       bindInput('#fuel-price', 'fuelPrice');
       bindInput('#fuel-cons', 'fuelCons100');
       bindInput('#toll-per-km', 'tollPerKm');
+      bindInput('#road-factor', 'roadFactor');
       
       // gare
       const btnAdd = qs('#btn-add-race');
@@ -807,12 +861,14 @@
       state.params.fuelPrice = 1.7;
       state.params.fuelCons100 = 14;
       state.params.tollPerKm = 0.00; 
+      state.params.roadFactor = 1.2;
   
       if(qs('#fixed-vehicle-month')) qs('#fixed-vehicle-month').value = state.fixed.vehicleMonth;
       if(qs('#fixed-clothing')) qs('#fixed-clothing').value = state.fixed.clothingYear;
       if(qs('#fuel-price')) qs('#fuel-price').value = state.params.fuelPrice;
       if(qs('#fuel-cons')) qs('#fuel-cons').value = state.params.fuelCons100;
       if(qs('#toll-per-km')) qs('#toll-per-km').value = state.params.tollPerKm;
+      if(qs('#road-factor')) qs('#road-factor').value = state.params.roadFactor;
     }
 
     document.addEventListener('DOMContentLoaded', ()=>{ 
